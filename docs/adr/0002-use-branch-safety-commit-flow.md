@@ -1,4 +1,4 @@
-﻿# adr 0002: Use Branch-Safety Commit Support Instead of Classic Gitflow
+# adr 0002: Use Branch-Safety Commit Support Instead of Classic Gitflow
 
 - Status: accepted
 - Date: 2026-03-11
@@ -33,15 +33,23 @@
 즉, 사용자는 stage 범위와 최종 메시지를 책임지고,
 AI 에이전트는 staged diff 기반 초안 작성과 브랜치 안전성 확인을 지원한다.
 
+또한 Git 관련 기본 포맷은 아래를 사용한다.
+
+- 이력 포맷: `[주제 or 카테고리] 제목`
+- 커밋 포맷: `[#이력번호] 이력번호에 해당하는 제목과 동일`
+- 브랜치 포맷: `이력번호-이력제목 영문 소문자 slug`
+
 ## Consequences
 
 - Positive:
   - 더 단순하고 실제 대화형 AI 협업 흐름에 잘 맞는다.
   - 기본 브랜치 직접 커밋 위험을 줄일 수 있다.
   - 전통적인 Gitflow의 복잡한 브랜치 모델을 강제하지 않는다.
+  - 이력 제목과 커밋 제목의 관계가 고정돼 세션마다 표현이 흔들릴 가능성이 줄어든다.
+  - 브랜치 이름도 같은 기준을 따라 일관되게 만들 수 있다.
 - Negative:
   - 조직마다 쓰는 정교한 Gitflow 규칙은 별도로 추가해야 한다.
-  - 브랜치 이름 규칙은 프로젝트별로 더 구체화가 필요할 수 있다.
+  - 한글 제목을 영문 slug로 옮기는 방식은 팀별로 해석 차이가 있을 수 있다.
 - Follow-up:
   - `ai/workflows/git-commit-workflow.md`에 구체 흐름을 둔다.
   - 사람용 예시는 `docs/examples/git-commit-scenario.md`에 둔다.
