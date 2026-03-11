@@ -1,4 +1,4 @@
-﻿# Project Docs
+# Project Docs
 
 이 디렉토리는 프로젝트 전체를 설명하는 문서를 모아두는 기본 위치다.
 
@@ -17,9 +17,11 @@
 - `glossary.md`: 주요 용어 정리
 - `requirements.md`: 상위 요구사항 정리
 - `policies.md`: 프로젝트 전반 정책 정리
+- `ai-collaboration.md`: 이 프로젝트에서만 쓰는 AI 협업 스타일과 옵션 규칙 정리
 
 ## 원칙
 
 - 프로젝트 전체에 공통으로 적용되는 문서는 `docs/project/`에 둔다.
 - 특정 작업에만 해당하는 내용은 `docs/tasks/<date>-<task-slug>/` 아래에 둔다.
 - 프로젝트 전체 기준을 바꾸는 장기 결정은 `docs/adr/`에 둔다.
+- 팀별 선호나 협업 스타일처럼 공통 규칙으로 올리기 이른 항목은 `docs/project/` 아래 별도 문서로 관리한다.

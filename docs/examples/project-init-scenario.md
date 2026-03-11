@@ -1,4 +1,4 @@
-﻿# Project Init Scenario
+# Project Init Scenario
 
 ## 목적
 
