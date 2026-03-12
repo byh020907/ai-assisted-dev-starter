@@ -14,6 +14,35 @@ Codex 기준의 워크플로우와 규칙을 담은 AI 보조 개발 스타터 �
 - 공통 프로젝트 시작 구조
 - 실제로 따라할 수 있는 개발 시나리오 예시
 
+## Quick Start
+
+새 프로젝트에서 이 스타터를 바로 쓰려면 아래 순서로 시작하면 된다.
+
+1. 루트에서는 `README.md`를 제외한 파일과 폴더를 복사한다.
+2. `ai/` 디렉토리는 그대로 유지한다.
+3. `docs/` 아래 내용은 각 폴더의 `README.md`만 남기고 나머지 예시 문서를 삭제한 뒤 시작한다.
+4. 프로젝트 개요가 필요해지면 `docs/project/brief.md`를 만들고, 없으면 `ai/templates/PROJECT_BRIEF.md`를 기준으로 작성한다.
+5. 실제 작업을 시작하면 `AGENTS.md`를 먼저 읽고, 이어서 `ai/README.md`와 필요한 세부 문서를 참조한다.
+
+초기 정리 기준 예시는 아래와 같다.
+
+```text
+keep:
+- AGENTS.md
+- ai/
+- docs/README.md
+- docs/project/README.md
+- docs/tasks/README.md
+- docs/adr/README.md
+
+remove before starting:
+- docs/project/* (except README.md)
+- docs/tasks/* (except README.md)
+- docs/adr/* (except README.md)
+```
+
+이렇게 시작하면 AI가 참고할 기준 문서는 유지하면서, 사람용 예시 산출물은 비운 상태로 프로젝트에 맞게 채워갈 수 있다.
+
 ## 구조 관점
 
 이 저장소는 아래 3가지 관점으로 사용할 수 있다.
