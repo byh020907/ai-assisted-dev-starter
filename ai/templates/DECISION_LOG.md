@@ -1,27 +1,29 @@
-﻿# Decision Log
+﻿# 결정 기록
 
-## Decision
+이 문서는 task 진행 방향에 대한 결정 이유와 근거를 남기는 문서다.
+작업 일지나 실행 체크리스트보다 선택지, 채택 이유, 영향 정리에 집중한다.
+
+## 결정 정보
 
 - 제목:
 - 날짜:
-- 상태: proposed | accepted | deprecated
+- 상태: proposed | accepted | deprecated | superseded
 
-## Context
+## 배경
 
 -
 
-## Options Considered
+## 검토한 선택지
 
 1.
 2.
 3.
 
-## Decision
+## 결정
 
 -
 
-## Consequences
+## 영향
 
 - 장점:
 - 단점:
-- 후속 작업:
