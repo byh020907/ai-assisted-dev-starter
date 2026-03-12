@@ -52,12 +52,13 @@
 아래 문서는 규칙 자체가 아니라 사람 관점의 시나리오 예시다.
 필요할 때만 참고한다.
 
-- 프로젝트 시작 시나리오: `docs/examples/project-init-scenario.md`
-- feature 작업 시나리오: `docs/examples/feature-dev-scenario.md`
-- git 커밋 시나리오: `docs/examples/git-commit-scenario.md`
+- 프로젝트 시작 시나리오: `ai/scenarios/project-init-scenario.md`
+- feature 작업 시나리오: `ai/scenarios/feature-dev-scenario.md`
+- git 커밋 시나리오: `ai/scenarios/git-commit-scenario.md`
 
 ## 분리 원칙
 
 - `AGENTS.md`에는 항상 지켜야 하는 최소 핵심과 참조 경로만 둔다.
 - 세부 분류, 관례, 작업 흐름은 각각 `ai/standards/`, `ai/workflows/`, `ai/templates/`로 분리한다.
 - 재현성에 직접 영향을 주는 규칙만 `AGENTS.md`에 남기고, 설명성 내용은 하위 문서로 내린다.
+

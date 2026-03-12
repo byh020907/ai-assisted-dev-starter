@@ -1,7 +1,7 @@
-# AI Docs
+﻿# AI Docs
 
 이 디렉토리는 사람이 읽는 운영 문서와 분리해서,
-AI 도구가 작업 중 참조할 기준, 흐름, skill, 템플릿을 모아두는 공간이다.
+AI 도구가 작업 중 참조할 기준, 흐름, skill, 템플릿, 시나리오를 모아두는 공간이다.
 
 ## 구성
 
@@ -9,6 +9,7 @@ AI 도구가 작업 중 참조할 기준, 흐름, skill, 템플릿을 모아두�
 - `workflows/`: 작업 유형별 진행 방식
 - `skills/`: 반복적으로 재사용할 작업 단위와 사용 가이드
 - `templates/`: AI가 활용할 문서/응답 템플릿
+- `scenarios/`: AI가 작업 흐름 예시로 참고하는 시나리오 문서
 
 ## 읽는 순서
 
@@ -23,6 +24,7 @@ AI 도구가 작업 중 참조할 기준, 흐름, skill, 템플릿을 모아두�
 - 기본 작업 흐름: `workflows/default-workflow.md`
 - feature 작업 흐름: `workflows/feature-workflow.md`
 - git 커밋 흐름: `workflows/git-commit-workflow.md`
+- 작업 시나리오: `scenarios/`
 
 ## 원칙
 
