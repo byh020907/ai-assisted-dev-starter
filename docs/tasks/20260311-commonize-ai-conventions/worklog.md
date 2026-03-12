@@ -1,4 +1,4 @@
-# Worklog
+﻿# Worklog
 
 ## 2026-03-11
 
@@ -11,7 +11,7 @@
 
 - 이 저장소는 사람용 문서와 AI용 운영 문서를 분리한다.
 - 반복 표현이나 작업 습관은 `ai/standards/conventions.md`로 승격하는 구조를 이미 채택하고 있다.
-- `docs/examples/project-init-scenario.md`에는 사용자 미반영 변경이 있다.
+- `ai/scenarios/project-init-scenario.md`에는 사용자 미반영 변경이 있다.
 
 ### 결정 / 보류
 

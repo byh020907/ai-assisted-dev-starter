@@ -1,4 +1,4 @@
-# adr 0002: Use Branch-Safety Commit Support Instead of Classic Gitflow
+﻿# adr 0002: Use Branch-Safety Commit Support Instead of Classic Gitflow
 
 - Status: accepted
 - Date: 2026-03-11
@@ -52,4 +52,4 @@ AI 에이전트는 staged diff 기반 초안 작성과 브랜치 안전성 확�
   - 한글 제목을 영문 slug로 옮기는 방식은 팀별로 해석 차이가 있을 수 있다.
 - Follow-up:
   - `ai/workflows/git-commit-workflow.md`에 구체 흐름을 둔다.
-  - 사람용 예시는 `docs/examples/git-commit-scenario.md`에 둔다.
+  - 사람용 예시는 `ai/scenarios/git-commit-scenario.md`에 둔다.

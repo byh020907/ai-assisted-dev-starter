@@ -1,4 +1,4 @@
-# Task
+﻿# Task
 
 ## 작업명
 
@@ -24,7 +24,7 @@
 ## 완료 조건
 
 - `ai/workflows/git-commit-workflow.md`에 이력/커밋 포맷이 추가된다.
-- `docs/examples/git-commit-scenario.md` 예시가 새 포맷을 따른다.
+- `ai/scenarios/git-commit-scenario.md` 예시가 새 포맷을 따른다.
 - 관련 ADR 문서에 이번 기준이 반영된다.
 
 ## 작업 범위
@@ -41,7 +41,7 @@
 ## 참고 문서
 
 - `ai/workflows/git-commit-workflow.md`
-- `docs/examples/git-commit-scenario.md`
+- `ai/scenarios/git-commit-scenario.md`
 - `docs/adr/0002-use-branch-safety-commit-flow.md`
 
 ## 메모

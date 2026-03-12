@@ -32,6 +32,7 @@ Codex 기준의 워크플로우와 규칙을 담은 AI 보조 개발 스타터 �
 |-- README.md
 |-- ai
 |   |-- README.md
+|   |-- scenarios
 |   |-- skills
 |   |-- standards
 |   |   |-- conventions.md
@@ -41,32 +42,23 @@ Codex 기준의 워크플로우와 규칙을 담은 AI 보조 개발 스타터 �
 |-- docs
 |   |-- README.md
 |   |-- adr
-|   |-- examples
-|   |   |-- README.md
-|   |   |-- conventions-standardization-scenario.md
-|   |   |-- feature-dev-scenario.md
-|   |   |-- git-commit-scenario.md
-|   |   `-- project-init-scenario.md
 |   |-- project
 |   `-- tasks
-|-- project-examples
-|   `-- README.md
 ```
 
 ## 디렉토리
 
-- `ai/`: AI가 참조하는 전용 기준, workflow, skill, templates
+- `ai/`: AI가 참조하는 전용 기준, workflow, skill, templates, scenarios
 - `ai/standards/`: 작업 분류와 문서 관례 같은 공통 기준
 - `ai/workflows/`: AI가 따라야 할 작업 흐름 문서
 - `ai/templates/`: AI가 작업 문서 초안을 만들 때 사용하는 템플릿
+- `ai/scenarios/`: AI가 작업 흐름 예시로 참고하는 시나리오 문서
 - `ai/skills/`: 반복 작업을 돕는 skill 문서
-- `docs/`: 사람이 읽고 관리하는 운영 문서
+- `docs/`: 사람이 읽고 관리하는 운영 문서와 프로젝트 산출물
 - `docs/project/`: 프로젝트 전체 설명, 도메인 배경, 상위 요구사항 문서 위치
 - `docs/tasks/`: 작업 단위 실문서 기본 위치
 - `docs/tasks/<date>-<task-slug>/`: 하나의 task와 관련된 문서 묶음 위치
 - `docs/adr/`: 중요한 운영/구조/워크플로우 결정 기록
-- `docs/examples/`: 실제 작업 시나리오에 대한 구체적인 예시 문서
-- `project-examples/`: 향후 실제 프로젝트 활용 예시를 정리할 공간
 
 ## 문서 역할 분리
 
@@ -75,7 +67,8 @@ Codex 기준의 워크플로우와 규칙을 담은 AI 보조 개발 스타터 �
 - `ai/standards/`: AI가 따라야 하는 기준 문서
 - `ai/workflows/`: AI가 따라야 하는 작업 흐름 문서
 - `ai/templates/`: AI가 문서 초안 작성에 쓰는 템플릿
-- `docs/`: 사람이 읽고 관리하는 문서와 예시
+- `ai/scenarios/`: AI가 작업 흐름 예시로 참고하는 시나리오 문서
+- `docs/`: 사람이 읽고 관리하는 운영 문서와 프로젝트 산출물
 - `docs/adr/`: 중요한 결정의 이유와 영향 기록
 
 ## 예제로 보는 사용 방식
@@ -84,7 +77,7 @@ Codex 기준의 워크플로우와 규칙을 담은 AI 보조 개발 스타터 �
 
 1. `README.md`와 `AGENTS.md`로 공통 구조와 운영 기준을 확인한다.
 2. 사람이 보는 문서는 `docs/`에서 관리한다.
-3. AI가 참조할 세부 규칙은 `ai/standards/`, `ai/workflows/`, `ai/templates/`에서 관리한다.
+3. AI가 참조할 세부 규칙은 `ai/standards/`, `ai/workflows/`, `ai/templates/`, `ai/scenarios/`에서 관리한다.
 4. 초기 문서가 없으면 `ai/templates/` 기반으로 아래 위치에 생성한다.
 5. 프로젝트 전체 배경과 상위 개요 문서는 `docs/project/` 아래에 둔다.
 6. task 관련 문서는 `docs/tasks/<date>-<task-slug>/` 아래에 함께 둔다.
@@ -93,4 +86,4 @@ Codex 기준의 워크플로우와 규칙을 담은 AI 보조 개발 스타터 �
 9. git 커밋 전에는 staged 변경 기준 초안 작성과 작업 브랜치 여부 확인을 함께 진행한다.
 10. 반복되는 문서 관례와 표현 규칙은 `ai/standards/conventions.md`에 반영한다.
 
-실제 예시는 `docs/examples/` 아래 시나리오 문서를 참고한다.
+실제 흐름 예시는 `ai/scenarios/` 아래 시나리오 문서를 참고한다.

@@ -1,4 +1,4 @@
-# Task
+﻿# Task
 
 ## 작업명
 
@@ -17,7 +17,7 @@
 ## 완료 조건
 
 - `docs/project/ai-collaboration.md`가 생성된다.
-- 관련 안내가 `ai/README.md`, `docs/project/README.md`, `docs/examples/README.md`에 반영된다.
+- 관련 안내가 `ai/README.md`, `docs/project/README.md`, `ai/scenarios/README.md`에 반영된다.
 - 사람용 예시 시나리오 문서가 추가된다.
 
 ## 작업 범위
@@ -35,9 +35,9 @@
 
 - `ai/README.md`
 - `docs/project/README.md`
-- `docs/examples/README.md`
+- `ai/scenarios/README.md`
 - `docs/adr/0003-separate-human-and-ai-docs.md`
 
 ## 메모
 
-- 기존 `docs/examples/project-init-scenario.md` 사용자 변경은 그대로 유지한다.
+- 기존 `ai/scenarios/project-init-scenario.md` 사용자 변경은 그대로 유지한다.

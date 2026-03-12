@@ -1,4 +1,4 @@
-# Task
+﻿# Task
 
 ## 작업명
 
@@ -37,4 +37,4 @@
 
 ## 메모
 
-- 현재 워크트리에 `docs/examples/project-init-scenario.md` 사용자 변경이 있어 건드리지 않는다.
+- 현재 워크트리에 `ai/scenarios/project-init-scenario.md` 사용자 변경이 있어 건드리지 않는다.
