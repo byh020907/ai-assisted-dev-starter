@@ -1,57 +1,135 @@
-﻿# ai-assisted-dev-starter
+# ai-assisted-dev-starter
 
-Codex 기준의 워크플로우와 규칙을 담은 AI 보조 개발 스타터 저장소
+Codex 기준의 워크플로우와 규칙을 담은 AI 보조 개발 starter core 저장소
 
 ## 소개
 
-`ai-assisted-dev-starter`는 AI를 활용한 개발 프로젝트를 시작할 때 공통으로 가져다 쓰는 베이스 저장소다.
+`ai-assisted-dev-starter`는 AI를 활용한 개발 프로젝트에서
+공통으로 재사용할 구조와 운영 규칙을 버전 관리하기 위한 starter core 저장소다.
+
+기본 사용 모델은 파일 복사가 아니라 `git submodule`이다.
+각 프로젝트는 이 저장소를 루트의 `ai-assisted-dev-starter/` submodule로 포함하고,
+프로젝트별 문서와 산출물은 자신의 루트에서 별도로 관리한다.
 
 이 저장소는 다음을 제공한다.
 
 - Codex 중심의 작업 방식
 - 재사용 가능한 운영 규칙
-- 문서 기반 협업 템플릿
-- 공통 프로젝트 시작 구조
+- 문서 기반 협업 템플릿과 초기화 구조
+- 공통 프로젝트 구조의 기준
 - 실제로 따라할 수 있는 개발 시나리오 예시
+
+## 권장 사용 모델
+
+이 저장소는 아래 두 영역을 분리하는 것을 전제로 한다.
+
+1. starter core
+2. project local outputs
+
+`starter core`는 여러 프로젝트가 함께 참조하는 공통 규칙과 템플릿이다.
+`project local outputs`는 특정 프로젝트에서만 누적되는 문서와 작업 산출물이다.
+
+권장 원칙은 다음과 같다.
+
+- 공통 구조, 규칙, workflow, 템플릿은 이 저장소 루트에서 관리한다.
+- 프로젝트별 개요, 요구사항, task 기록, ADR은 소비 프로젝트의 전용 리소스 루트에서 관리한다.
+- 소비 프로젝트는 이 저장소를 버전 고정된 `submodule`로 포함하고, 필요할 때만 업데이트한다.
+- 소비 프로젝트 루트에는 얇은 `AGENTS.md`를 두고 starter core 문서를 참조하게 한다.
+- 소비 프로젝트에 이미 `docs/`가 있다면 충돌을 피하기 위해 starter 전용 산출물은 별도 루트에 둔다.
+- 소비 프로젝트 초기 구조는 `project-template/`과 `templates/`를 기준으로 재현 가능하게 만든다.
 
 ## Quick Start
 
-새 프로젝트에서 이 스타터를 바로 쓰려면 아래 순서로 시작하면 된다.
-
-1. 루트에서는 `README.md`를 제외한 파일과 폴더를 복사한다.
-2. `ai/` 디렉토리는 그대로 유지한다.
-3. `docs/` 아래 내용은 각 폴더의 `README.md`만 남기고 나머지 예시 문서를 삭제한 뒤 시작한다.
-4. 프로젝트 개요가 필요해지면 `docs/project/brief.md`를 만들고, 없으면 `ai/templates/PROJECT_BRIEF.md`를 기준으로 작성한다.
-5. 실제 작업을 시작하면 `AGENTS.md`를 먼저 읽고, 이어서 `ai/README.md`와 필요한 세부 문서를 참조한다.
-
-초기 정리 기준 예시는 아래와 같다.
+새 프로젝트에서 이 저장소를 쓰려면 아래와 같은 구조를 권장한다.
 
 ```text
-keep:
-- AGENTS.md
-- ai/
-- docs/README.md
-- docs/project/README.md
-- docs/tasks/README.md
-- docs/adr/README.md
-
-remove before starting:
-- docs/project/* (except README.md)
-- docs/tasks/* (except README.md)
-- docs/adr/* (except README.md)
+my-project/
+|-- AGENTS.md
+|-- .ai-assisted-dev-starter/
+|   |-- README.md
+|   |-- project/
+|   |-- tasks/
+|   `-- adr/
+`-- ai-assisted-dev-starter/   # git submodule
 ```
 
-이렇게 시작하면 AI가 참고할 기준 문서는 유지하면서, 사람용 예시 산출물은 비운 상태로 프로젝트에 맞게 채워갈 수 있다.
+시작 순서는 아래와 같다.
+
+1. 새 프로젝트 루트를 만든다.
+2. 이 저장소를 프로젝트 루트의 `ai-assisted-dev-starter` 경로에 `git submodule`로 추가한다.
+3. 프로젝트 루트에서 starter core의 초기화 스크립트를 실행해 최소 `AGENTS.md`와 프로젝트 문서 구조를 만든다.
+4. 생성된 `AGENTS.md`와 `.ai-assisted-dev-starter/` 기본 파일을 프로젝트에 맞게 채운다.
+5. 공통 규칙 업데이트가 필요하면 submodule 버전을 갱신하고, 프로젝트에서 새 gitlink를 커밋한다.
+
+초기 구조가 아직 없다면 아래 스크립트로 바로 초기화할 수 있다.
+
+```powershell
+pwsh ./ai-assisted-dev-starter/scripts/init-project-structure.ps1 `
+  -ProjectRoot . `
+  -SharedCoreRelativePath ai-assisted-dev-starter `
+  -ProjectResourcesRoot .ai-assisted-dev-starter
+```
+
+이 스크립트는 재현성을 위해 다음 규칙으로 동작한다.
+
+- 없으면 생성한다.
+- 이미 있으면 덮어쓰지 않는다.
+- 기본 프로젝트 리소스 루트는 `.ai-assisted-dev-starter/`다.
+- 생성 대상은 `AGENTS.md`, `.ai-assisted-dev-starter/README.md`, `.ai-assisted-dev-starter/project/README.md`, `.ai-assisted-dev-starter/tasks/README.md`, `.ai-assisted-dev-starter/adr/README.md`, `.ai-assisted-dev-starter/project/brief.md`, `.ai-assisted-dev-starter/project/ai-collaboration.md`다.
+- `AGENTS.md`는 starter core를 참조하는 최소 버전으로 생성된다.
+- 기존 프로젝트에 `docs/`가 있어도 충돌하지 않는다.
+- `.ai-assisted-dev-starter/` 기본 파일은 `project-template/` 구조에서 생성된다.
+
+생성되는 최소 `AGENTS.md` 템플릿은 [PROJECT_AGENTS.md](/D:/projects/ai-assisted-dev-starter/templates/PROJECT_AGENTS.md)에 있다.
+프로젝트 로컬 구조 템플릿은 [project-template](/D:/projects/ai-assisted-dev-starter/project-template)에 있다.
+
+프로젝트 루트의 최소 `AGENTS.md` 예시는 아래처럼 생성된다.
+
+```md
+# Project AGENTS
+
+이 프로젝트의 공통 AI 운영 규칙은 `ai-assisted-dev-starter/AGENTS.md`를 먼저 따른다.
+
+프로젝트 고유 규칙은 아래 문서를 추가로 본다.
+
+1. `.ai-assisted-dev-starter/project/ai-collaboration.md`
+2. `.ai-assisted-dev-starter/project/brief.md`
+3. 현재 작업과 관련된 `.ai-assisted-dev-starter/tasks/` 문서
+```
+
+이 모델에서는 공통 자산 업데이트와 프로젝트별 산출물 기록을 서로 분리해서 관리할 수 있다.
+
+스크립트를 쓰지 못하는 환경이라면 아래 프롬프트를 그대로 사용해도 된다.
+
+```text
+현재 프로젝트 루트에 아래 구조가 없으면 생성해줘.
+
+- AGENTS.md
+- .ai-assisted-dev-starter/README.md
+- .ai-assisted-dev-starter/project/README.md
+- .ai-assisted-dev-starter/project/brief.md
+- .ai-assisted-dev-starter/project/ai-collaboration.md
+- .ai-assisted-dev-starter/tasks/README.md
+- .ai-assisted-dev-starter/adr/README.md
+
+조건:
+- 공통 규칙 참조 경로는 `ai-assisted-dev-starter/AGENTS.md`
+- 이미 있는 파일은 덮어쓰지 말 것
+- AGENTS.md는 최소 진입 문서만 만들 것
+- `.ai-assisted-dev-starter`는 starter 전용 프로젝트 리소스 루트로 설명할 것
+- 결과는 생성된 파일 목록과 각 파일의 목적까지 함께 요약할 것
+```
 
 ## 구조 관점
 
 이 저장소는 아래 3가지 관점으로 사용할 수 있다.
 
 1. 모든 프로젝트 공통 구조 사항
-2. AI가 개발하면서 만드는 산출물 구조
-3. 프로젝트별 특화된 구조 및 규칙 사항
+2. AI가 개발하면서 참고하는 공통 운영 자산
+3. 프로젝트별 특화 구조 및 산출물
 
-현재 루트에는 1, 2가 바로 반영되어 있고, 3은 각 프로젝트에서 별도로 구체화하는 영역으로 본다.
+이 저장소는 주로 1, 2를 제공한다.
+3은 소비 프로젝트에서 별도로 구체화하고 유지하는 영역으로 본다.
 
 ## 구성
 
@@ -59,60 +137,55 @@ remove before starting:
 .
 |-- AGENTS.md
 |-- README.md
-|-- ai
-|   |-- README.md
-|   |-- scenarios
-|   |-- skills
-|   |-- standards
-|   |   |-- conventions.md
-|   |   `-- task-classification.md
-|   |-- templates
-|   `-- workflows
-|-- docs
-|   |-- README.md
-|   |-- adr
-|   |-- project
-|   `-- tasks
+|-- STARTER.md
+|-- scenarios
+|-- skills
+|-- standards
+|-- templates
+|-- workflows
+|-- project-template
+`-- scripts
 ```
 
 ## 디렉토리
 
-- `ai/`: AI가 참조하는 전용 기준, workflow, skill, templates, scenarios
-- `ai/standards/`: 작업 분류와 문서 관례 같은 공통 기준
-- `ai/workflows/`: AI가 따라야 할 작업 흐름 문서
-- `ai/templates/`: AI가 작업 문서 초안을 만들 때 사용하는 템플릿
-- `ai/scenarios/`: AI가 작업 흐름 예시로 참고하는 시나리오 문서
-- `ai/skills/`: 반복 작업을 돕는 skill 문서
-- `docs/`: 사람이 읽고 관리하는 운영 문서와 프로젝트 산출물
-- `docs/project/`: 프로젝트 전체 설명, 도메인 배경, 상위 요구사항 문서 위치
-- `docs/tasks/`: 작업 단위 실문서 기본 위치
-- `docs/tasks/<date>-<task-slug>/`: 하나의 task와 관련된 문서 묶음 위치
-- `docs/adr/`: 중요한 운영/구조/워크플로우 결정 기록
+- `standards/`: 작업 분류와 문서 관례 같은 공통 기준
+- `workflows/`: AI가 따라야 할 공통 작업 흐름 문서
+- `templates/`: 소비 프로젝트가 참고할 문서 템플릿
+- `scenarios/`: 공통 작업 흐름 예시
+- `skills/`: 반복 작업을 돕는 skill 문서
+- `project-template/`: 소비 프로젝트 로컬 구조의 디렉토리 템플릿
+- `scripts/`: 소비 프로젝트 초기화 스크립트
 
-## 문서 역할 분리
+## 공통 구조와 프로젝트 산출물의 경계
 
-- `README.md`: 사람이 이 저장소를 이해하기 위한 문서
-- `AGENTS.md`: AI가 가장 먼저 읽는 짧은 인덱스 문서
-- `ai/standards/`: AI가 따라야 하는 기준 문서
-- `ai/workflows/`: AI가 따라야 하는 작업 흐름 문서
-- `ai/templates/`: AI가 문서 초안 작성에 쓰는 템플릿
-- `ai/scenarios/`: AI가 작업 흐름 예시로 참고하는 시나리오 문서
-- `docs/`: 사람이 읽고 관리하는 운영 문서와 프로젝트 산출물
-- `docs/adr/`: 중요한 결정의 이유와 영향 기록
+아래 항목은 starter core에 둔다.
+
+- 공통 `AGENTS` 진입 규칙
+- 공통 AI workflow와 standards
+- 문서 템플릿
+- 프로젝트 로컬 구조 템플릿
+- 재사용 가능한 시나리오와 skill
+
+아래 항목은 소비 프로젝트의 전용 리소스 루트 예를 들어 `.ai-assisted-dev-starter/` 아래에 둔다.
+
+- 프로젝트 개요와 도메인 설명
+- 프로젝트별 AI 협업 규칙
+- 실제 작업 `task.md`, `worklog.md`, `decision.md`
+- 프로젝트 장기 결정용 ADR
+- 제품 요구사항, 운영 정책, 팀 규칙
 
 ## 예제로 보는 사용 방식
 
-예를 들어 새 프로젝트를 시작하거나 기능을 개발하거나 커밋을 준비할 때는 아래처럼 쓸 수 있다.
+새 프로젝트에서 이 starter core를 붙여 쓸 때는 아래처럼 운영한다.
 
-1. `README.md`와 `AGENTS.md`로 공통 구조와 운영 기준을 확인한다.
-2. 사람이 보는 문서는 `docs/`에서 관리한다.
-3. AI가 참조할 세부 규칙은 `ai/standards/`, `ai/workflows/`, `ai/templates/`, `ai/scenarios/`에서 관리한다.
-4. 초기 문서가 없으면 `ai/templates/` 기반으로 아래 위치에 생성한다.
-5. 프로젝트 전체 배경과 상위 개요 문서는 `docs/project/` 아래에 둔다.
-6. task 관련 문서는 `docs/tasks/<date>-<task-slug>/` 아래에 함께 둔다.
-7. 같은 task 안에서 `task.md`, `worklog.md`, `decision.md`를 함께 관리한다.
-8. 장기 구조 결정은 `docs/adr/`에 남긴다.
-9. git 커밋 전에는 staged 변경 기준 초안 작성과 작업 브랜치 여부 확인을 함께 진행한다.
-10. 반복되는 문서 관례와 표현 규칙은 `ai/standards/conventions.md`에 반영한다.
+1. 프로젝트 루트 `AGENTS.md`에서 starter core의 `AGENTS.md`를 참조한다.
+2. 공통 기준은 submodule 루트의 `standards/`, `workflows/`, `templates/`, `scenarios/` 문서를 따른다.
+3. 프로젝트 고유 AI 협업 자산은 프로젝트 루트 `.ai-assisted-dev-starter/`에서 관리한다.
+4. 초기 문서가 없으면 starter core의 초기화 스크립트로 `.ai-assisted-dev-starter/` 구조를 생성한다.
+5. 프로젝트 전체 배경과 상위 개요 문서는 `.ai-assisted-dev-starter/project/` 아래에 둔다.
+6. task 관련 문서는 `.ai-assisted-dev-starter/tasks/<date>-<task-slug>/` 아래에 함께 둔다.
+7. 장기 구조 결정은 `.ai-assisted-dev-starter/adr/`에 남긴다.
+8. starter core 자체를 개선할 필요가 있으면 이 저장소에서 변경하고, 이후 각 프로젝트가 submodule 버전을 올려 반영한다.
 
-실제 흐름 예시는 `ai/scenarios/` 아래 시나리오 문서를 참고한다.
+실제 흐름 예시는 `scenarios/` 아래 시나리오 문서를 참고한다.
