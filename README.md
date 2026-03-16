@@ -53,6 +53,12 @@ my-project/
 `-- ai-assisted-dev-starter/   # git submodule
 ```
 
+바로 실행 가능한 기본 명령은 아래와 같다.
+
+```bash
+git submodule add https://github.com/byh020907/ai-assisted-dev-starter.git ai-assisted-dev-starter
+```
+
 시작 순서는 아래와 같다.
 
 1. 새 프로젝트 루트를 만든다.
@@ -60,6 +66,20 @@ my-project/
 3. 프로젝트 루트에서 starter core의 초기화 스크립트를 실행해 최소 `AGENTS.md`와 프로젝트 문서 구조를 만든다.
 4. 생성된 `AGENTS.md`와 `.ai-assisted-dev-starter/` 기본 파일을 프로젝트에 맞게 채운다.
 5. 공통 규칙 업데이트가 필요하면 submodule 버전을 갱신하고, 프로젝트에서 새 gitlink를 커밋한다.
+
+이미 submodule이 포함된 프로젝트를 clone 받은 뒤라면 아래 명령으로 초기화한다.
+
+```bash
+git submodule update --init --recursive
+```
+
+기존 프로젝트에서 starter core를 최신 upstream으로 올리고 싶다면 아래처럼 갱신할 수 있다.
+
+```bash
+git submodule update --remote ai-assisted-dev-starter
+git add ai-assisted-dev-starter
+git commit -m "Update ai-assisted-dev-starter submodule"
+```
 
 초기 구조가 아직 없다면 아래 스크립트로 바로 초기화할 수 있다.
 
