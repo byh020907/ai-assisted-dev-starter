@@ -38,6 +38,14 @@ Codex 기준의 워크플로우와 규칙을 담은 AI 보조 개발 starter cor
 - 소비 프로젝트에 이미 `docs/`가 있다면 충돌을 피하기 위해 starter 전용 산출물은 별도 루트에 둔다.
 - 소비 프로젝트 초기 구조는 `project-template/`과 `templates/`를 기준으로 재현 가능하게 만든다.
 
+운영 경계는 아래처럼 강하게 본다.
+
+- `ai-assisted-dev-starter/`는 기본적으로 읽기 전용 core다.
+- 프로젝트에서 새 규칙을 추가할 때 기본 기록 위치는 `.ai-assisted-dev-starter/project/`다.
+- 프로젝트 작업 중 생성되는 `ADR`, `task`, 협업 규칙은 starter core가 아니라 소비 프로젝트 로컬 루트에만 둔다.
+- 여러 프로젝트에 공통으로 재사용할 가치가 명확할 때만 starter core 수정 후보로 본다.
+- 사용자가 starter 자체 개선을 명시적으로 요청하지 않았다면 AI는 core 수정 대신 프로젝트 로컬 문서를 우선 수정한다.
+
 ## Quick Start
 
 새 프로젝트에서 이 저장소를 쓰려면 아래와 같은 구조를 권장한다.
@@ -66,6 +74,12 @@ git submodule add https://github.com/byh020907/ai-assisted-dev-starter.git ai-as
 3. 프로젝트 루트에서 starter core의 초기화 스크립트를 실행해 최소 `AGENTS.md`와 프로젝트 문서 구조를 만든다.
 4. 생성된 `AGENTS.md`와 `.ai-assisted-dev-starter/` 기본 파일을 프로젝트에 맞게 채운다.
 5. 공통 규칙 업데이트가 필요하면 submodule 버전을 갱신하고, 프로젝트에서 새 gitlink를 커밋한다.
+
+규칙 추가 요청을 처리할 때의 기본 흐름은 아래와 같다.
+
+1. 프로젝트 전용 규칙이면 `.ai-assisted-dev-starter/project/ai-collaboration.md` 또는 관련 프로젝트 문서를 수정한다.
+2. 프로젝트 산출물이면 `.ai-assisted-dev-starter/tasks/`, `.ai-assisted-dev-starter/adr/` 등에 기록한다.
+3. 여러 프로젝트에 공통으로 승격할 내용이고 사용자가 starter 개선을 명시한 경우에만 starter core 문서를 수정한다.
 
 이미 submodule이 포함된 프로젝트를 clone 받은 뒤라면 아래 명령으로 초기화한다.
 
@@ -194,6 +208,12 @@ pwsh ./ai-assisted-dev-starter/scripts/init-project-structure.ps1 `
 - 실제 작업 `task.md`, `worklog.md`, `decision.md`
 - 프로젝트 장기 결정용 ADR
 - 제품 요구사항, 운영 정책, 팀 규칙
+
+AI가 규칙 추가 요청을 처리할 때의 기본 우선순위는 다음과 같다.
+
+1. 프로젝트 전용 규칙 또는 예외면 소비 프로젝트 로컬 루트에 기록한다.
+2. 프로젝트 산출물이면 소비 프로젝트 로컬 루트에 기록한다.
+3. 공통화 가치가 분명하고 사용자가 명시적으로 요청한 경우에만 starter core에 반영한다.
 
 ## 예제로 보는 사용 방식
 
