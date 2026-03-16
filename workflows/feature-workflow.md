@@ -8,10 +8,10 @@
 
 ## 기본 문서 흐름
 
-- 현재 작업 초안: `ai/templates/TASK.md`
-- 진행 기록 초안: `ai/templates/WORKLOG.md`
-- 결정 기록 초안: `ai/templates/DECISION_LOG.md`
-- 프로젝트 목표가 실제로 바뀌는 경우에만 `ai/templates/PROJECT_BRIEF.md`를 참고하거나 갱신한다.
+- 현재 작업 초안: `templates/TASK.md`
+- 진행 기록 초안: `templates/WORKLOG.md`
+- 결정 기록 초안: `templates/DECISION_LOG.md`
+- 프로젝트 목표가 실제로 바뀌는 경우에만 `templates/PROJECT_BRIEF.md`를 참고하거나 갱신한다.
 
 ## 기본 생성 위치
 

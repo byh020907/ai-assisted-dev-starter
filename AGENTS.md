@@ -1,7 +1,7 @@
 ﻿# AI 개발 운영 규칙
 
 이 문서는 이 저장소에서 AI 도구가 가장 먼저 읽는 진입 문서다.
-상세 규칙은 `ai/` 아래 문서를 참고하고, 사람 중심 설명은 `README.md`와 `docs/`를 참고한다.
+상세 규칙은 루트의 기준 문서를 참고하고, 사람 중심 설명은 `README.md`와 `STARTER.md`를 참고한다.
 
 ## 최소 핵심 원칙
 
@@ -13,14 +13,15 @@
 
 ## 문서 생성 기본 규칙
 
-- 프로젝트 상위 문서 위치: `docs/project/`
-- 프로젝트 개요 기본 문서: `docs/project/brief.md`
-- 작업 문서 묶음: `docs/tasks/<date>-<task-slug>/`
-- 작업 정의: `docs/tasks/<date>-<task-slug>/task.md`
-- 작업 기록: `docs/tasks/<date>-<task-slug>/worklog.md`
-- 작업 단위 결정: `docs/tasks/<date>-<task-slug>/decision.md`
+- 프로젝트 로컬 리소스 루트: `.ai-assisted-dev-starter/`
+- 프로젝트 상위 문서 위치: `.ai-assisted-dev-starter/project/`
+- 프로젝트 개요 기본 문서: `.ai-assisted-dev-starter/project/brief.md`
+- 작업 문서 묶음: `.ai-assisted-dev-starter/tasks/<date>-<task-slug>/`
+- 작업 정의: `.ai-assisted-dev-starter/tasks/<date>-<task-slug>/task.md`
+- 작업 기록: `.ai-assisted-dev-starter/tasks/<date>-<task-slug>/worklog.md`
+- 작업 단위 결정: `.ai-assisted-dev-starter/tasks/<date>-<task-slug>/decision.md`
 
-해당 문서가 없으면 `ai/templates/` 템플릿을 기반으로 먼저 생성한다.
+해당 문서가 없으면 `templates/` 템플릿을 기반으로 먼저 생성한다.
 이미 문서가 있으면 새로 만들기보다 기존 문서를 갱신하는 것을 우선한다.
 
 ## Git 최소 규칙
@@ -33,32 +34,31 @@
 ## 읽는 순서
 
 1. `AGENTS.md`
-2. `ai/README.md`
+2. `STARTER.md`
 3. 필요한 세부 문서
 
 ## 바로 참조할 문서
 
-- 작업 분류 기준: `ai/standards/task-classification.md`
-- 문서 관례 기준: `ai/standards/conventions.md`
-- 기본 workflow: `ai/workflows/default-workflow.md`
-- feature workflow: `ai/workflows/feature-workflow.md`
-- git commit workflow: `ai/workflows/git-commit-workflow.md`
-- 템플릿: `ai/templates/`
-- ADR 기준: `docs/adr/README.md`
-- 사람용 운영 문서: `docs/README.md`
+- 작업 분류 기준: `standards/task-classification.md`
+- 문서 관례 기준: `standards/conventions.md`
+- 기본 workflow: `workflows/default-workflow.md`
+- feature workflow: `workflows/feature-workflow.md`
+- git commit workflow: `workflows/git-commit-workflow.md`
+- 템플릿: `templates/`
+- 프로젝트 로컬 구조 템플릿: `project-template/`
 
 ## 예시 문서
 
 아래 문서는 규칙 자체가 아니라 사람 관점의 시나리오 예시다.
 필요할 때만 참고한다.
 
-- 프로젝트 시작 시나리오: `ai/scenarios/project-init-scenario.md`
-- feature 작업 시나리오: `ai/scenarios/feature-dev-scenario.md`
-- git 커밋 시나리오: `ai/scenarios/git-commit-scenario.md`
+- 프로젝트 시작 시나리오: `scenarios/project-init-scenario.md`
+- feature 작업 시나리오: `scenarios/feature-dev-scenario.md`
+- git 커밋 시나리오: `scenarios/git-commit-scenario.md`
 
 ## 분리 원칙
 
 - `AGENTS.md`에는 항상 지켜야 하는 최소 핵심과 참조 경로만 둔다.
-- 세부 분류, 관례, 작업 흐름은 각각 `ai/standards/`, `ai/workflows/`, `ai/templates/`로 분리한다.
+- 세부 분류, 관례, 작업 흐름은 각각 `standards/`, `workflows/`, `templates/`로 분리한다.
 - 재현성에 직접 영향을 주는 규칙만 `AGENTS.md`에 남기고, 설명성 내용은 하위 문서로 내린다.
 
