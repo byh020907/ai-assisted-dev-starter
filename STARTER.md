@@ -33,6 +33,9 @@
 - 프로젝트 고유 설명과 산출물은 소비 프로젝트의 전용 리소스 루트 예를 들어 `.ai-assisted-dev-starter/`에서 관리한다.
 - 같은 내용을 사람용 문서와 AI용 문서에 중복 작성하지 않는다.
 - 구조와 사용 기준은 `README.md`와 이 문서에 직접 반영한다.
+- starter core는 기본적으로 읽기 전용으로 사용한다.
+- 프로젝트 규칙 추가 요청은 기본적으로 `.ai-assisted-dev-starter/project/` 문서에 기록한다.
+- starter core 수정은 사용자가 공통 규칙 승격이나 starter 자체 개선을 명시적으로 요청한 경우에만 수행한다.
 
 ## 프로젝트별 확장 규칙
 
@@ -40,3 +43,4 @@
 - 특정 팀의 협업 스타일이나 선호는 소비 프로젝트 문서로 분리한다.
 - 예를 들어 응답 언어, 구현 전 제안 방식, 코드 주석 스타일 같은 항목은 소비 프로젝트 루트의 `.ai-assisted-dev-starter/project/ai-collaboration.md` 같은 문서에 두는 것을 우선한다.
 - 프로젝트 실문서를 새로 만들 때는 `templates/`와 `project-template/`을 참고하되, 결과물은 starter core 안이 아니라 소비 프로젝트 쪽에 생성한다.
+- 프로젝트에서만 유효한 규칙을 starter core에 직접 추가하지 않는다.
