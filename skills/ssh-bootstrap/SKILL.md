@@ -15,6 +15,7 @@ Guide AI-driven remote work through a user-opened shared SSH session in WSL, not
 - Let the user complete password or MFA prompts directly.
 - Reuse opened sessions for AI-driven remote commands.
 - Close one or many shared sessions when work is done.
+- Use script-based remote execution for complex shell work so nested quotes and heredocs do not break in PowerShell.
 
 ## Required Preconditions
 
@@ -68,8 +69,30 @@ Guide AI-driven remote work through a user-opened shared SSH session in WSL, not
 4. If the user wants one session, suggest `wsl -d <distro> ssh <alias>` or `start-wsl-shared-sessions.ps1` with one alias.
 5. If the user wants many sessions, prefer `start-wsl-shared-sessions.ps1 -OpenInNewWindows -Background`.
 6. Before remote work, verify the session with `check-wsl-shared-session.ps1`.
-7. Run remote work with `invoke-wsl-shared-command.ps1`.
-8. After work, close sessions with `close-wsl-shared-sessions.ps1`.
+7. For simple one-line commands, use `invoke-wsl-shared-command.ps1 -RemoteCommand`.
+8. For multiline shell, heredocs, nested quotes, redirection, or background jobs, prefer `invoke-wsl-shared-command.ps1 -LocalScriptPath` or `-RemoteScriptBase64`.
+9. After work, close sessions with `close-wsl-shared-sessions.ps1`.
+
+## Standard pattern for complex remote work
+
+1. Create a full bash script body locally instead of composing a long shell string.
+2. If generating the script inline in PowerShell, use a single-quoted here-string so `$HOME`, `$(...)`, and inner quotes are preserved for the remote shell.
+3. Replace only explicit placeholders such as `__RUN_ID__` after the here-string is created.
+4. Send the script with `invoke-wsl-shared-command.ps1 -LocalScriptPath` or `-RemoteScriptBase64`.
+5. For background jobs, have the remote script itself create the run directory, script file, log file, and PID file, then print those paths back.
+6. Immediately run a second verification step through the same script transport to confirm:
+   - run directory exists
+   - script/log/PID files exist
+   - PID is populated
+   - process is still running
+   - first few log lines look correct
+
+## Failure patterns to avoid
+
+- Do not build complex remote commands in `-RemoteCommand` when they contain heredocs, `nohup`, command substitution, or multiple redirections.
+- Do not generate base64 payloads from a double-quoted PowerShell here-string when the script contains `$HOME`, `$!`, `$(...)`, or embedded shell quotes. PowerShell will expand them locally and corrupt the remote script.
+- Do not mix execution transport styles in one workflow. If the start step used script transport, the validation step should also use script transport.
+- Do not treat a background launch as complete until the follow-up verification confirms the PID file and live process.
 
 ## Use the bundled reference
 
@@ -99,11 +122,16 @@ Keep responses short and operational:
 - To start one or many shared sessions, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/start-wsl-shared-sessions.ps1 -AliasNames <alias1>,<alias2> [-Distro <name>] [-OpenInNewWindows] [-Background]`.
 - To verify a shared session, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/check-wsl-shared-session.ps1 -AliasName <alias> [-Distro <name>]`.
 - To run remote commands, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/invoke-wsl-shared-command.ps1 -AliasName <alias> -RemoteCommand "<command>" [-Distro <name>]`.
+- For complex remote operations, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/invoke-wsl-shared-command.ps1 -AliasName <alias> -LocalScriptPath <local-script> [-ScriptArguments <arg1>,<arg2>] [-Distro <name>]`.
+- If the script content is already generated in memory, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/invoke-wsl-shared-command.ps1 -AliasName <alias> -RemoteScriptBase64 <base64> [-ScriptArguments <arg1>,<arg2>] [-Distro <name>]`.
 - To close one or many shared sessions after work, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/close-wsl-shared-sessions.ps1 -AliasNames <alias1>,<alias2> [-Distro <name>]`.
 - When showing prerequisite setup, either run the WSL setup script for the user or instruct them to configure `ControlMaster`, `ControlPath`, and `ControlPersist` inside WSL.
 - The user must still authenticate in the current PowerShell session when `wsl ... ssh ...` prompts for credentials.
 - If multiple servers need password or MFA prompts, prefer launching separate PowerShell windows with `start-wsl-shared-sessions.ps1 -OpenInNewWindows -Background` so the user can authenticate each session independently and each window closes after authentication completes.
 - When running remote commands, always use the alias and avoid expanding it into raw connection details.
+- Do not use `-RemoteCommand` for heredocs, multiline shell fragments, nested quotes, command substitution chains, or long background-job setup commands. Use script transport instead.
+- When generating a script inline in PowerShell, prefer a single-quoted here-string plus explicit placeholder replacement. This avoids local expansion of shell variables like `$HOME` before the script reaches the remote host.
+- For background jobs, prefer a two-step flow: launch with script transport, then verify with script transport.
 
 ## Reject unsafe patterns
 
