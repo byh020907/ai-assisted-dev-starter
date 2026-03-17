@@ -8,6 +8,7 @@
 - 실제 SSH 인증은 WSL 안의 `ssh` 가 담당한다.
 - 사용자는 인증만 직접 한다.
 - AI는 alias 등록, 세션 시작 명령 제안, 세션 확인, 원격 명령 실행, 세션 종료를 담당한다.
+- 복잡한 원격 작업은 단일 문자열 명령 대신 로컬 스크립트를 stdin으로 전달하는 방식을 기본으로 한다.
 - 다중 서버 작업은 PowerShell 창 여러 개를 띄운 뒤 인증 완료 후 자동 종료하는 흐름을 기본으로 한다.
 - 사용자가 distro 이름을 헷갈리면 AI가 먼저 WSL 목록을 조회해서 후보를 제안한다.
 
@@ -222,6 +223,81 @@ pwsh -File .\skills\ssh-bootstrap\scripts\invoke-wsl-shared-command.ps1 `
   -RemoteCommand "nginx -t"
 ```
 
+복잡한 원격 작업 실행:
+
+```powershell
+pwsh -File .\skills\ssh-bootstrap\scripts\invoke-wsl-shared-command.ps1 `
+  -AliasName dev-server `
+  -LocalScriptPath .\scripts\remote-check.sh `
+  -ScriptArguments app /var/www/app `
+  -Distro OracleLinux_9_5
+```
+
+`-RemoteCommand` 는 한 줄짜리 단순 명령에만 쓴다. 아래 같은 경우는 `-LocalScriptPath` 또는 `-RemoteScriptBase64` 를 사용한다.
+
+- heredoc 이 포함된 명령
+- 중첩 따옴표가 많은 bash 구문
+- command substitution, redirection, `nohup`, background job 설정이 섞인 명령
+- 여러 줄 shell 스크립트
+
+## 복잡한 작업 표준 패턴
+
+복잡한 원격 작업은 아래 순서를 기본으로 한다.
+
+1. 로컬에서 완전한 bash 스크립트를 만든다.
+2. PowerShell 안에서 즉석 생성할 때는 반드시 single-quoted here-string `@' ... '@` 를 사용한다.
+3. `$HOME`, `$!`, `$(...)`, inner quote는 remote bash가 해석해야 하므로 로컬 PowerShell에서 먼저 확장되면 안 된다.
+4. 필요한 실행 식별자는 `__RUN_ID__` 같은 placeholder로 넣고, here-string 생성 뒤 `.Replace(...)` 로 치환한다.
+5. 실행은 `invoke-wsl-shared-command.ps1 -LocalScriptPath` 또는 `-RemoteScriptBase64` 로 한다.
+6. 백그라운드 작업이면 직후에 같은 script transport로 검증 스크립트를 한 번 더 실행한다.
+
+권장 검증 항목:
+
+- 작업 디렉터리 생성 여부
+- 실행 스크립트 생성 여부
+- 로그 파일 생성 여부
+- PID 파일 생성 여부
+- `kill -0 <pid>` 기준 프로세스 생존 여부
+- 로그 첫 몇 줄이 기대한 형태인지
+
+피해야 할 패턴:
+
+- `-RemoteCommand` 에 heredoc, `nohup`, redirection, command substitution을 한 번에 몰아넣기
+- double-quoted here-string으로 base64 원본 스크립트를 만들기
+- 시작은 script transport로 하고, 확인은 다시 복잡한 `-RemoteCommand` 로 바꾸기
+
+아래는 검증된 패턴의 핵심 예시다.
+
+```powershell
+$runId = Get-Date -Format yyyyMMdd-HHmmss
+$script = @'
+set -eu
+run_dir="$HOME/star-log-run-__RUN_ID__"
+script_path="$run_dir/star_printer.sh"
+log_path="$run_dir/star_printer.log"
+pid_path="$run_dir/star_printer.pid"
+mkdir -p "$run_dir"
+cat > "$script_path" <<'EOF'
+#!/usr/bin/env bash
+set -eu
+for i in $(seq 1 100); do
+  printf '%*s\n' "$i" '' | tr ' ' '*'
+  sleep 1
+done
+EOF
+chmod 700 "$script_path"
+nohup bash "$script_path" > "$log_path" 2>&1 < /dev/null &
+echo $! > "$pid_path"
+printf 'RUN_DIR=%s\nLOG=%s\nPID_FILE=%s\nPID=%s\n' "$run_dir" "$log_path" "$pid_path" "$(cat "$pid_path")"
+'@
+$script = $script.Replace('__RUN_ID__', $runId)
+$base64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($script))
+pwsh -File .\skills\ssh-bootstrap\scripts\invoke-wsl-shared-command.ps1 `
+  -AliasName dev-server `
+  -RemoteScriptBase64 $base64 `
+  -Distro OracleLinux_9_5
+```
+
 세션 종료:
 
 ```powershell
@@ -240,6 +316,9 @@ pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 `
 - `ssh_run`
   - 목적: WSL 공유 세션을 통해 단일 원격 명령 실행
   - 예시: `pwsh -File .\skills\ssh-bootstrap\scripts\invoke-wsl-shared-command.ps1 -AliasName dev-server -RemoteCommand "ls -al /var/www"`
+- `ssh_run_script`
+  - 목적: 복잡한 원격 작업을 로컬 스크립트로 안전하게 전달
+  - 예시: `pwsh -File .\skills\ssh-bootstrap\scripts\invoke-wsl-shared-command.ps1 -AliasName dev-server -LocalScriptPath .\scripts\remote-check.sh -Distro OracleLinux_9_5`
 - `ssh_close_session`
   - 목적: 작업 종료 후 세션 정리
   - 예시: `pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 -AliasNames dev-server`
@@ -277,6 +356,15 @@ pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 `
 3. AI는 `check-wsl-shared-session.ps1` 로 세션 상태를 확인한다.
 4. AI는 `invoke-wsl-shared-command.ps1 -AliasName dev-server -RemoteCommand "nginx -t"` 를 실행한다.
 5. 작업이 끝나면 `close-wsl-shared-sessions.ps1 -AliasNames dev-server` 로 세션을 닫는다.
+
+### 시나리오 D: 복잡한 배경 작업 실행
+
+1. 사용자가 먼저 PowerShell에서 `wsl -d OracleLinux_9_5 ssh dev-server` 로 인증을 완료한다.
+2. AI는 복잡한 멀티라인 bash 명령을 `-RemoteCommand` 로 조합하지 않는다.
+3. 대신 로컬 임시 스크립트 또는 준비된 스크립트를 만든 뒤 `invoke-wsl-shared-command.ps1 -LocalScriptPath ...` 로 실행한다.
+4. inline 생성 시 single-quoted here-string과 placeholder replacement를 사용한다.
+5. 실행 직후 같은 script transport로 PID, 로그, 작업 디렉터리를 검증한다.
+6. 이 방식은 heredoc, 중첩 따옴표, redirection, `nohup` 같은 구문이 PowerShell 인용 규칙에 깨지지 않게 한다.
 
 ### 시나리오 C: 여러 서버를 각각 등록
 
