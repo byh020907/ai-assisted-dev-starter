@@ -85,6 +85,27 @@ pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-session.ps1 `
   -Distro OracleLinux_9_5
 ```
 
+인증 후 창을 자동으로 닫고 shared session만 남기려면:
+
+```powershell
+pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-session.ps1 `
+  -AliasName dev-server `
+  -Distro OracleLinux_9_5 `
+  -Background
+```
+
+여러 서버를 한 번에 열어야 하면:
+
+```powershell
+pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 `
+  -AliasNames dev-server,staging-server,prod-readonly `
+  -Distro OracleLinux_9_5 `
+  -OpenInNewWindows `
+  -Background
+```
+
+비밀번호나 MFA가 필요한 서버는 한 창에서 동시에 처리할 수 없으므로, 병렬 시작은 별도 PowerShell 창을 여는 방식이 기본이다. `-Background` 를 함께 쓰면 인증이 끝난 뒤 각 창이 자동으로 닫히고 shared session만 남는다.
+
 1. 사용자가 PowerShell에서 `wsl -d <distro> ssh dev-server` 또는 `wsl -d <distro> ssh -MNf dev-server` 를 실행한다.
 2. 비밀번호, MFA, 키 패스프레이즈가 필요하면 사용자가 직접 입력한다.
 3. 인증이 끝나면 공유 세션이 열린다.
@@ -115,7 +136,18 @@ pwsh -File .\skills\ssh-bootstrap\scripts\setup-wsl-shared-session-alias.ps1 `
 ```powershell
 pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-session.ps1 `
   -AliasName dev-server `
-  -Distro OracleLinux_9_5
+  -Distro OracleLinux_9_5 `
+  -Background
+```
+
+다중 세션 시작:
+
+```powershell
+pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 `
+  -AliasNames dev-server,staging-server,prod-readonly `
+  -Distro OracleLinux_9_5 `
+  -OpenInNewWindows `
+  -Background
 ```
 
 세션 확인:
@@ -136,6 +168,14 @@ pwsh -File .\skills\ssh-bootstrap\scripts\invoke-wsl-shared-command.ps1 `
 
 ```powershell
 pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-session.ps1 -AliasName dev-server
+```
+
+다중 세션 종료:
+
+```powershell
+pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 `
+  -AliasNames dev-server,staging-server,prod-readonly `
+  -Distro OracleLinux_9_5
 ```
 
 각 스크립트는 WSL 안의 `ssh` 를 사용하고 비밀번호를 받지 않는다. 세션이 없으면 실패하고, 먼저 사용자가 WSL에서 세션을 열도록 요구한다.
@@ -189,8 +229,10 @@ pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-session.ps1 -AliasNam
 
 1. 사용자가 `dev-server`, `staging-server`, `prod-readonly` 같은 alias와 각 host/user를 AI에 알려준다.
 2. AI는 alias별로 `setup-wsl-shared-session-alias.ps1` 를 실행해 WSL config를 준비한다.
-3. 이후 사용자는 필요한 서버만 먼저 PowerShell에서 `wsl -d <distro> ssh <alias>` 로 열어 둔다.
-4. AI는 열린 alias에 대해서만 원격 작업을 수행한다.
+3. 이후 사용자는 PowerShell에서 `start-wsl-shared-sessions.ps1 -AliasNames ... -OpenInNewWindows -Background` 로 여러 세션 창을 한 번에 띄운다.
+4. 각 창에서 비밀번호나 MFA를 직접 완료하면 창은 자동으로 닫힌다.
+5. AI는 열린 alias에 대해서만 원격 작업을 수행한다.
+6. 작업이 끝나면 `close-wsl-shared-sessions.ps1` 로 여러 세션을 한 번에 닫을 수 있다.
 
 ## 응답 작성 규칙
 

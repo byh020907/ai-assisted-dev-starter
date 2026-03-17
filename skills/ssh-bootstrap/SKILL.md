@@ -46,9 +46,11 @@ Guide AI-driven remote work through a user-opened shared SSH session in WSL, not
 - Prefer these bundled scripts for repeatable operations:
   - [scripts/setup-wsl-shared-session-alias.ps1](scripts/setup-wsl-shared-session-alias.ps1)
   - [scripts/start-wsl-shared-session.ps1](scripts/start-wsl-shared-session.ps1)
+  - [scripts/start-wsl-shared-sessions.ps1](scripts/start-wsl-shared-sessions.ps1)
   - [scripts/check-wsl-shared-session.ps1](scripts/check-wsl-shared-session.ps1)
   - [scripts/invoke-wsl-shared-command.ps1](scripts/invoke-wsl-shared-command.ps1)
   - [scripts/close-wsl-shared-session.ps1](scripts/close-wsl-shared-session.ps1)
+  - [scripts/close-wsl-shared-sessions.ps1](scripts/close-wsl-shared-sessions.ps1)
 - Reuse command patterns with placeholders only for alias names and non-sensitive paths.
 
 ## Produce answers in this shape
@@ -64,11 +66,15 @@ Keep responses short and operational:
 
 - To create a shared-session alias from user-supplied non-secret values, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/setup-wsl-shared-session-alias.ps1 -AliasName <alias> -HostName <host> -UserName <user> [-Port <port>] [-Distro <name>]`.
 - To start the interactive shared session from PowerShell, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/start-wsl-shared-session.ps1 -AliasName <alias> [-Distro <name>]`.
+- To start the shared session without leaving the shell open, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/start-wsl-shared-session.ps1 -AliasName <alias> [-Distro <name>] -Background`.
+- To start multiple shared sessions, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/start-wsl-shared-sessions.ps1 -AliasNames <alias1>,<alias2> [-Distro <name>] [-OpenInNewWindows] [-Background]`.
 - To verify a shared session, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/check-wsl-shared-session.ps1 -AliasName <alias> [-Distro <name>]`.
 - To run remote commands, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/invoke-wsl-shared-command.ps1 -AliasName <alias> -RemoteCommand "<command>" [-Distro <name>]`.
 - To close the session after work, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/close-wsl-shared-session.ps1 -AliasName <alias> [-Distro <name>]`.
+- To close multiple shared sessions after work, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/close-wsl-shared-sessions.ps1 -AliasNames <alias1>,<alias2> [-Distro <name>]`.
 - When showing prerequisite setup, either run the WSL setup script for the user or instruct them to configure `ControlMaster`, `ControlPath`, and `ControlPersist` inside WSL.
 - The user must still authenticate in the current PowerShell session when `wsl ... ssh ...` prompts for credentials.
+- If multiple servers need password or MFA prompts, prefer launching separate PowerShell windows with `start-wsl-shared-sessions.ps1 -OpenInNewWindows -Background` so the user can authenticate each session independently and each window closes after authentication completes.
 - When running remote commands, always use the alias and avoid expanding it into raw connection details.
 
 ## Reject unsafe patterns
