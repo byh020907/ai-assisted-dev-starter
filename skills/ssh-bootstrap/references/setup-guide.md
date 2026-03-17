@@ -2,6 +2,62 @@
 
 이 문서는 `ssh-bootstrap` skill이 AI 에이전트가 WSL 안의 사용자 인증을 공유 세션으로만 재사용하도록 안내할 때 참고하는 운영용 레퍼런스다.
 
+## 한눈에 보기
+
+- 기본 쉘은 PowerShell이다.
+- 실제 SSH 인증은 WSL 안의 `ssh` 가 담당한다.
+- 사용자는 인증만 직접 한다.
+- AI는 alias 등록, 세션 시작 명령 제안, 세션 확인, 원격 명령 실행, 세션 종료를 담당한다.
+- 다중 서버 작업은 PowerShell 창 여러 개를 띄운 뒤 인증 완료 후 자동 종료하는 흐름을 기본으로 한다.
+- 사용자가 distro 이름을 헷갈리면 AI가 먼저 WSL 목록을 조회해서 후보를 제안한다.
+
+## 필수 요구사항
+
+- Windows에서 PowerShell을 사용 중이어야 한다.
+- WSL이 설치되어 있어야 한다.
+- 대상 배포판 예: `OracleLinux_9_5`, `Ubuntu` 가 이미 생성되어 있어야 한다.
+- 해당 배포판 안에서 `ssh` 명령이 동작해야 한다.
+- 사용자가 해당 서버에 로그인할 자격 증명을 이미 알고 있어야 한다.
+- 비밀번호, MFA, 개인 키, 패스프레이즈는 사용자만 입력한다.
+- AI는 비밀값을 읽거나 저장하지 않는다.
+
+## 표준 진행 순서
+
+1. 사용자가 `alias`, `host`, `user`, optional `port` 를 준다.
+2. distro가 불명확하면 AI가 먼저 WSL 목록을 조회한다.
+3. AI가 적절한 distro를 제안하거나 사용자 확인을 받는다.
+4. AI가 WSL alias를 등록한다.
+5. 사용자가 PowerShell에서 세션 시작 명령을 실행한다.
+6. 사용자가 인증을 직접 완료한다.
+7. AI가 세션 상태를 확인한다.
+8. AI가 원격 명령을 실행한다.
+9. 작업이 끝나면 AI가 세션을 닫는다.
+
+## distro 확인 먼저 하기
+
+사용자가 distro 이름을 정확히 모르더라도 바로 막지 않는다.
+
+AI가 먼저 실행할 명령:
+
+```powershell
+pwsh -File .\skills\ssh-bootstrap\scripts\list-wsl-distros.ps1
+```
+
+예를 들어 출력이 아래 같다면:
+
+```text
+Ubuntu
+OracleLinux_9_5
+docker-desktop
+docker-desktop-data
+```
+
+AI는 일반적으로 다음처럼 진행한다.
+
+- 서버 작업용 배포판처럼 보이는 항목을 우선 제안한다.
+- `docker-desktop`, `docker-desktop-data` 같은 내부 용도 배포판은 기본 후보에서 제외한다.
+- 사용자가 "오라클 리눅스였던 것 같다" 정도만 말해도 `OracleLinux_9_5` 를 먼저 제안한다.
+
 ## 목표
 
 - 사용자가 WSL 터미널에서 직접 인증한다.
@@ -30,7 +86,8 @@ pwsh -File .\skills\ssh-bootstrap\scripts\setup-wsl-shared-session-alias.ps1 `
   -AliasName dev-server `
   -HostName YOUR_SERVER_IP `
   -UserName YOUR_USER `
-  -Port 22
+  -Port 22 `
+  -Distro OracleLinux_9_5
 ```
 
 필요하면 `-Distro Ubuntu` 같은 식으로 대상 WSL 배포판을 지정한다.
@@ -80,16 +137,16 @@ wsl -d OracleLinux_9_5 ssh dev-server
 wrapper를 쓰려면:
 
 ```powershell
-pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-session.ps1 `
-  -AliasName dev-server `
+pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 `
+  -AliasNames dev-server `
   -Distro OracleLinux_9_5
 ```
 
 인증 후 창을 자동으로 닫고 shared session만 남기려면:
 
 ```powershell
-pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-session.ps1 `
-  -AliasName dev-server `
+pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 `
+  -AliasNames dev-server `
   -Distro OracleLinux_9_5 `
   -Background
 ```
@@ -128,14 +185,15 @@ pwsh -File .\skills\ssh-bootstrap\scripts\setup-wsl-shared-session-alias.ps1 `
   -AliasName dev-server `
   -HostName YOUR_SERVER_IP `
   -UserName YOUR_USER `
-  -Port 22
+  -Port 22 `
+  -Distro OracleLinux_9_5
 ```
 
 세션 시작:
 
 ```powershell
-pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-session.ps1 `
-  -AliasName dev-server `
+pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 `
+  -AliasNames dev-server `
   -Distro OracleLinux_9_5 `
   -Background
 ```
@@ -167,14 +225,8 @@ pwsh -File .\skills\ssh-bootstrap\scripts\invoke-wsl-shared-command.ps1 `
 세션 종료:
 
 ```powershell
-pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-session.ps1 -AliasName dev-server
-```
-
-다중 세션 종료:
-
-```powershell
 pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 `
-  -AliasNames dev-server,staging-server,prod-readonly `
+  -AliasNames dev-server `
   -Distro OracleLinux_9_5
 ```
 
@@ -190,7 +242,7 @@ pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 `
   - 예시: `pwsh -File .\skills\ssh-bootstrap\scripts\invoke-wsl-shared-command.ps1 -AliasName dev-server -RemoteCommand "ls -al /var/www"`
 - `ssh_close_session`
   - 목적: 작업 종료 후 세션 정리
-  - 예시: `pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-session.ps1 -AliasName dev-server`
+  - 예시: `pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 -AliasNames dev-server`
 
 ## 보안 가이드라인
 
@@ -216,6 +268,7 @@ pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 `
 4. 사용자가 비밀번호나 MFA를 직접 입력한다.
 5. AI는 `check-wsl-shared-session.ps1` 로 세션을 확인한다.
 6. AI는 필요한 원격 작업을 수행한다.
+7. 작업이 끝나면 `close-wsl-shared-sessions.ps1 -AliasNames dev-server` 로 세션을 닫는다.
 
 ### 시나리오 B: 이미 등록된 서버에서 즉시 작업
 
@@ -223,7 +276,7 @@ pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 `
 2. 사용자가 AI에게 "방금 연 dev-server 에서 nginx 설정 확인해줘" 라고 요청한다.
 3. AI는 `check-wsl-shared-session.ps1` 로 세션 상태를 확인한다.
 4. AI는 `invoke-wsl-shared-command.ps1 -AliasName dev-server -RemoteCommand "nginx -t"` 를 실행한다.
-5. 작업이 끝나면 필요 시 `close-wsl-shared-session.ps1` 로 세션을 닫는다.
+5. 작업이 끝나면 `close-wsl-shared-sessions.ps1 -AliasNames dev-server` 로 세션을 닫는다.
 
 ### 시나리오 C: 여러 서버를 각각 등록
 

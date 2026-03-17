@@ -63,6 +63,13 @@ if ($OpenInNewWindows) {
     exit 0
 }
 
+if ($normalizedAliases.Count -eq 1) {
+    $command = Get-WslSshCommand -AliasName $normalizedAliases[0] -DistroName $Distro -UseBackground:$Background
+    Write-Host "Starting shared SSH session for '$($normalizedAliases[0])'"
+    Invoke-Expression $command
+    exit $LASTEXITCODE
+}
+
 foreach ($alias in $normalizedAliases) {
     $command = Get-WslSshCommand -AliasName $alias -DistroName $Distro -UseBackground:$Background
     Write-Host $command

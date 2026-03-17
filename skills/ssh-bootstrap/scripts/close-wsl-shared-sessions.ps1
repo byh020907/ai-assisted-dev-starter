@@ -25,9 +25,17 @@ if ($Distro) {
     $wslArgs = @("-d", $Distro)
 }
 
+$failedAliases = @()
 foreach ($alias in $normalizedAliases) {
     Write-Host "Closing WSL shared SSH session for alias '$alias'"
     & wsl @wslArgs ssh -O exit $alias
+    if ($LASTEXITCODE -ne 0) {
+        $failedAliases += $alias
+    }
+}
+
+if ($failedAliases.Count -gt 0) {
+    throw "Failed to close shared SSH session for: $($failedAliases -join ', ')"
 }
 
 exit 0
