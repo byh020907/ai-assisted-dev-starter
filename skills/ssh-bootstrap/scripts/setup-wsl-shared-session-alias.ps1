@@ -1,5 +1,4 @@
 param(
-    [Parameter(Mandatory = $true)]
     [string]$AliasName,
 
     [Parameter(Mandatory = $true)]
@@ -15,9 +14,22 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+if ([string]::IsNullOrWhiteSpace($AliasName)) {
+    $AliasName = $HostName.Trim()
+}
+
+if ([string]::IsNullOrWhiteSpace($AliasName)) {
+    throw "AliasName is empty. Provide -AliasName explicitly or pass a non-empty -HostName so the alias can default to the host or IP."
+}
+
 $wslArgs = @()
 if ($Distro) {
     $wslArgs = @("-d", $Distro)
+}
+
+$nextStepCommand = "pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 -AliasNames $AliasName"
+if ($Distro) {
+    $nextStepCommand += " -Distro $Distro"
 }
 
 $aliasPattern = [regex]::Escape($AliasName)
@@ -40,7 +52,7 @@ $scriptLines = @(
     "mkdir -p ~/.ssh"
     "touch ~/.ssh/config"
     "if grep -Eq '^[[:space:]]*Host[[:space:]]+$aliasPattern([[:space:]]|\$)' ~/.ssh/config; then"
-    "  echo ""Host alias '$AliasName' already exists in ~/.ssh/config"" >&2"
+    "  echo ""Host alias '$AliasName' already exists in ~/.ssh/config. Choose a different alias or reuse the existing one."" >&2"
     "  exit 1"
     "fi"
     "cp ~/.ssh/config ~/.ssh/config.bak.`$(date +%Y%m%d%H%M%S)"
@@ -50,7 +62,7 @@ $scriptLines = @(
     "chmod 700 ~/.ssh"
     "chmod 600 ~/.ssh/config"
     "echo ""Added shared-session SSH alias '$AliasName' to ~/.ssh/config in WSL"""
-    "echo ""Next step: from PowerShell, run 'wsl -d ${Distro:-<your-distro>} ssh $AliasName' and complete authentication locally."""
+    "echo ""Next step: from PowerShell, run '$nextStepCommand' and complete authentication locally."""
 ) -join "`n"
 
 & wsl @wslArgs bash -lc $scriptLines

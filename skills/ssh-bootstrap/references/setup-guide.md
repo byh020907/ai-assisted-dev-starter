@@ -24,7 +24,7 @@
 
 ## 표준 진행 순서
 
-1. 사용자가 `alias`, `host`, `user`, optional `port` 를 준다.
+1. 사용자가 `host`, `user`, optional `alias`, optional `port` 를 준다.
 2. distro가 불명확하면 AI가 먼저 WSL 목록을 조회한다.
 3. AI가 적절한 distro를 제안하거나 사용자 확인을 받는다.
 4. AI가 WSL alias를 등록한다.
@@ -84,7 +84,6 @@ AI가 대신 alias를 추가할 때:
 
 ```powershell
 pwsh -File .\skills\ssh-bootstrap\scripts\setup-wsl-shared-session-alias.ps1 `
-  -AliasName dev-server `
   -HostName YOUR_SERVER_IP `
   -UserName YOUR_USER `
   -Port 22 `
@@ -100,6 +99,12 @@ AI가 이 스크립트로 처리할 수 있는 입력:
 - SSH 사용자명
 - 포트
 - WSL distro 이름
+
+기본 규칙:
+
+- alias를 따로 주지 않으면 `HostName` 값을 그대로 alias로 사용한다.
+- 가능하면 별도 이름보다 IP literal 자체를 alias로 우선 사용한다.
+- 같은 alias가 이미 `~/.ssh/config` 에 있으면 덮어쓰지 않고 실패해야 한다.
 
 AI가 받으면 안 되는 입력:
 
@@ -123,6 +128,14 @@ Host dev-server
     ServerAliveCountMax 3
 ```
 
+IP를 그대로 alias로 쓰면 아래처럼 생성된다.
+
+```sshconfig
+Host 10.0.0.12
+    HostName 10.0.0.12
+    User YOUR_USER
+```
+
 사용자는 WSL `~/.ssh/config` 내용을 AI에게 보여줄 필요가 없다.
 
 ## 사용자 시작 절차
@@ -132,14 +145,8 @@ PowerShell이 기본 쉘이면 WSL 터미널을 따로 열 필요가 없다.
 권장 시작 명령:
 
 ```powershell
-wsl -d OracleLinux_9_5 ssh dev-server
-```
-
-wrapper를 쓰려면:
-
-```powershell
 pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 `
-  -AliasNames dev-server `
+  -AliasNames 10.0.0.12 `
   -Distro OracleLinux_9_5
 ```
 
@@ -147,7 +154,7 @@ pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 `
 
 ```powershell
 pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 `
-  -AliasNames dev-server `
+  -AliasNames 10.0.0.12 `
   -Distro OracleLinux_9_5 `
   -Background
 ```
@@ -156,7 +163,7 @@ pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 `
 
 ```powershell
 pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 `
-  -AliasNames dev-server,staging-server,prod-readonly `
+  -AliasNames 10.0.0.12,10.0.0.13,10.0.0.14 `
   -Distro OracleLinux_9_5 `
   -OpenInNewWindows `
   -Background
@@ -164,7 +171,7 @@ pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 `
 
 비밀번호나 MFA가 필요한 서버는 한 창에서 동시에 처리할 수 없으므로, 병렬 시작은 별도 PowerShell 창을 여는 방식이 기본이다. `-Background` 를 함께 쓰면 인증이 끝난 뒤 각 창이 자동으로 닫히고 shared session만 남는다.
 
-1. 사용자가 PowerShell에서 `wsl -d <distro> ssh dev-server` 또는 `wsl -d <distro> ssh -MNf dev-server` 를 실행한다.
+1. 사용자가 PowerShell에서 `start-wsl-shared-sessions.ps1` 를 실행한다.
 2. 비밀번호, MFA, 키 패스프레이즈가 필요하면 사용자가 직접 입력한다.
 3. 인증이 끝나면 공유 세션이 열린다.
 4. 그 뒤부터 AI 에이전트는 alias만 사용해 명령을 실행할 수 있다.
@@ -172,7 +179,7 @@ pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 `
 권장 확인:
 
 ```bash
-ssh -O check dev-server
+ssh -O check 10.0.0.12
 ```
 
 ## 에이전트 실행 스크립트
@@ -183,7 +190,6 @@ alias 준비:
 
 ```powershell
 pwsh -File .\skills\ssh-bootstrap\scripts\setup-wsl-shared-session-alias.ps1 `
-  -AliasName dev-server `
   -HostName YOUR_SERVER_IP `
   -UserName YOUR_USER `
   -Port 22 `
@@ -194,7 +200,7 @@ pwsh -File .\skills\ssh-bootstrap\scripts\setup-wsl-shared-session-alias.ps1 `
 
 ```powershell
 pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 `
-  -AliasNames dev-server `
+  -AliasNames 10.0.0.12 `
   -Distro OracleLinux_9_5 `
   -Background
 ```
@@ -203,7 +209,7 @@ pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 `
 
 ```powershell
 pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 `
-  -AliasNames dev-server,staging-server,prod-readonly `
+  -AliasNames 10.0.0.12,10.0.0.13,10.0.0.14 `
   -Distro OracleLinux_9_5 `
   -OpenInNewWindows `
   -Background
@@ -212,14 +218,14 @@ pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 `
 세션 확인:
 
 ```powershell
-pwsh -File .\skills\ssh-bootstrap\scripts\check-wsl-shared-session.ps1 -AliasName dev-server
+pwsh -File .\skills\ssh-bootstrap\scripts\check-wsl-shared-session.ps1 -AliasName 10.0.0.12
 ```
 
 원격 명령 실행:
 
 ```powershell
 pwsh -File .\skills\ssh-bootstrap\scripts\invoke-wsl-shared-command.ps1 `
-  -AliasName dev-server `
+  -AliasName 10.0.0.12 `
   -RemoteCommand "nginx -t"
 ```
 
@@ -227,7 +233,7 @@ pwsh -File .\skills\ssh-bootstrap\scripts\invoke-wsl-shared-command.ps1 `
 
 ```powershell
 pwsh -File .\skills\ssh-bootstrap\scripts\invoke-wsl-shared-command.ps1 `
-  -AliasName dev-server `
+  -AliasName 10.0.0.12 `
   -LocalScriptPath .\scripts\remote-check.sh `
   -ScriptArguments app /var/www/app `
   -Distro OracleLinux_9_5
@@ -302,7 +308,7 @@ pwsh -File .\skills\ssh-bootstrap\scripts\invoke-wsl-shared-command.ps1 `
 
 ```powershell
 pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 `
-  -AliasNames dev-server `
+  -AliasNames 10.0.0.12 `
   -Distro OracleLinux_9_5
 ```
 
@@ -312,22 +318,22 @@ pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 `
 
 - `ssh_check_session`
   - 목적: WSL 공유 세션이 열려 있는지 확인
-  - 예시: `pwsh -File .\skills\ssh-bootstrap\scripts\check-wsl-shared-session.ps1 -AliasName dev-server`
+  - 예시: `pwsh -File .\skills\ssh-bootstrap\scripts\check-wsl-shared-session.ps1 -AliasName 10.0.0.12`
 - `ssh_run`
   - 목적: WSL 공유 세션을 통해 단일 원격 명령 실행
-  - 예시: `pwsh -File .\skills\ssh-bootstrap\scripts\invoke-wsl-shared-command.ps1 -AliasName dev-server -RemoteCommand "ls -al /var/www"`
+  - 예시: `pwsh -File .\skills\ssh-bootstrap\scripts\invoke-wsl-shared-command.ps1 -AliasName 10.0.0.12 -RemoteCommand "ls -al /var/www"`
 - `ssh_run_script`
   - 목적: 복잡한 원격 작업을 로컬 스크립트로 안전하게 전달
-  - 예시: `pwsh -File .\skills\ssh-bootstrap\scripts\invoke-wsl-shared-command.ps1 -AliasName dev-server -LocalScriptPath .\scripts\remote-check.sh -Distro OracleLinux_9_5`
+  - 예시: `pwsh -File .\skills\ssh-bootstrap\scripts\invoke-wsl-shared-command.ps1 -AliasName 10.0.0.12 -LocalScriptPath .\scripts\remote-check.sh -Distro OracleLinux_9_5`
 - `ssh_close_session`
   - 목적: 작업 종료 후 세션 정리
-  - 예시: `pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 -AliasNames dev-server`
+  - 예시: `pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 -AliasNames 10.0.0.12`
 
 ## 보안 가이드라인
 
 - 비밀번호를 채팅에 붙여넣지 않는다.
 - 비밀번호를 환경변수, 저장소 파일, wrapper 인자에 직접 넘기지 않는다.
-- 가능하면 작업이 끝난 뒤 WSL에서 `ssh -O exit <alias>` 로 세션을 닫는다.
+- 가능하면 작업이 끝난 뒤 WSL에서 `ssh -O exit 10.0.0.12` 처럼 alias를 지정해 세션을 닫는다.
 - WSL `~/.ssh/` 권한은 사용자 전용으로 유지한다.
 
 ## 보안 체크리스트
@@ -341,25 +347,25 @@ pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 `
 
 ### 시나리오 A: 처음 등록하는 서버
 
-1. 사용자가 AI에게 alias, host, user, port, distro를 준다.
+1. 사용자가 AI에게 host, user, optional alias, port, distro를 준다.
 2. AI는 `setup-wsl-shared-session-alias.ps1` 로 WSL `~/.ssh/config` 에 alias를 추가한다.
-3. AI는 사용자에게 PowerShell에서 `wsl -d OracleLinux_9_5 ssh dev-server` 를 한 번 실행해 인증하라고 안내한다.
+3. AI는 사용자에게 PowerShell에서 `start-wsl-shared-sessions.ps1 -AliasNames 10.0.0.12 -Distro OracleLinux_9_5` 를 실행해 인증하라고 안내한다.
 4. 사용자가 비밀번호나 MFA를 직접 입력한다.
 5. AI는 `check-wsl-shared-session.ps1` 로 세션을 확인한다.
 6. AI는 필요한 원격 작업을 수행한다.
-7. 작업이 끝나면 `close-wsl-shared-sessions.ps1 -AliasNames dev-server` 로 세션을 닫는다.
+7. 작업이 끝나면 `close-wsl-shared-sessions.ps1 -AliasNames 10.0.0.12` 로 세션을 닫는다.
 
 ### 시나리오 B: 이미 등록된 서버에서 즉시 작업
 
-1. 사용자가 먼저 PowerShell에서 `wsl -d OracleLinux_9_5 ssh dev-server` 로 로그인한다.
-2. 사용자가 AI에게 "방금 연 dev-server 에서 nginx 설정 확인해줘" 라고 요청한다.
+1. 사용자가 먼저 PowerShell에서 `start-wsl-shared-sessions.ps1 -AliasNames 10.0.0.12 -Distro OracleLinux_9_5` 로 세션을 연다.
+2. 사용자가 AI에게 "방금 연 10.0.0.12 에서 nginx 설정 확인해줘" 라고 요청한다.
 3. AI는 `check-wsl-shared-session.ps1` 로 세션 상태를 확인한다.
-4. AI는 `invoke-wsl-shared-command.ps1 -AliasName dev-server -RemoteCommand "nginx -t"` 를 실행한다.
-5. 작업이 끝나면 `close-wsl-shared-sessions.ps1 -AliasNames dev-server` 로 세션을 닫는다.
+4. AI는 `invoke-wsl-shared-command.ps1 -AliasName 10.0.0.12 -RemoteCommand "nginx -t"` 를 실행한다.
+5. 작업이 끝나면 `close-wsl-shared-sessions.ps1 -AliasNames 10.0.0.12` 로 세션을 닫는다.
 
 ### 시나리오 D: 복잡한 배경 작업 실행
 
-1. 사용자가 먼저 PowerShell에서 `wsl -d OracleLinux_9_5 ssh dev-server` 로 인증을 완료한다.
+1. 사용자가 먼저 PowerShell에서 `start-wsl-shared-sessions.ps1 -AliasNames 10.0.0.12 -Distro OracleLinux_9_5` 로 인증을 완료한다.
 2. AI는 복잡한 멀티라인 bash 명령을 `-RemoteCommand` 로 조합하지 않는다.
 3. 대신 로컬 임시 스크립트 또는 준비된 스크립트를 만든 뒤 `invoke-wsl-shared-command.ps1 -LocalScriptPath ...` 로 실행한다.
 4. inline 생성 시 single-quoted here-string과 placeholder replacement를 사용한다.
@@ -368,7 +374,7 @@ pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 `
 
 ### 시나리오 C: 여러 서버를 각각 등록
 
-1. 사용자가 `dev-server`, `staging-server`, `prod-readonly` 같은 alias와 각 host/user를 AI에 알려준다.
+1. 사용자가 `10.0.0.12`, `10.0.0.13`, `10.0.0.14` 같은 alias 또는 각 host/user를 AI에 알려준다.
 2. AI는 alias별로 `setup-wsl-shared-session-alias.ps1` 를 실행해 WSL config를 준비한다.
 3. 이후 사용자는 PowerShell에서 `start-wsl-shared-sessions.ps1 -AliasNames ... -OpenInNewWindows -Background` 로 여러 세션 창을 한 번에 띄운다.
 4. 각 창에서 비밀번호나 MFA를 직접 완료하면 창은 자동으로 닫힌다.
@@ -379,4 +385,5 @@ pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 `
 
 - 설명보다 절차를 우선한다.
 - 민감값이 필요한 자리는 `YOUR_SERVER_IP`, `YOUR_USER`, `dev-server` 같은 플레이스홀더를 사용한다.
+- alias가 없으면 기본값은 host/IP 값이며, 가능하면 IP literal alias를 우선한다.
 - 검증과 실행 단계는 항상 alias만 사용한다.

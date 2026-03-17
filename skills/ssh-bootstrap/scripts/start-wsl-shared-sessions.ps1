@@ -28,6 +28,15 @@ if (-not $normalizedAliases -or $normalizedAliases.Count -eq 0) {
     throw "Provide at least one non-empty alias in -AliasNames."
 }
 
+$duplicateAliases = $normalizedAliases |
+    Group-Object |
+    Where-Object { $_.Count -gt 1 } |
+    Select-Object -ExpandProperty Name
+
+if ($duplicateAliases) {
+    throw "Duplicate aliases in -AliasNames are not allowed: $($duplicateAliases -join ', ')"
+}
+
 function Get-WslSshCommand {
     param(
         [string]$AliasName,
