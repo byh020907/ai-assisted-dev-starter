@@ -15,7 +15,10 @@ if ($Distro) {
 Write-Host "Checking WSL shared SSH session for alias '$AliasName'"
 $output = & wsl @wslArgs ssh -O check $AliasName 2>&1
 $exitCode = $LASTEXITCODE
-$startHint = if ($Distro) { "wsl -d $Distro ssh $AliasName" } else { "wsl ssh $AliasName" }
+$startHint = "pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 -AliasNames $AliasName"
+if ($Distro) {
+    $startHint += " -Distro $Distro"
+}
 
 if ($exitCode -eq 0) {
     $output | Write-Output
