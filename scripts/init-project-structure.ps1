@@ -1,6 +1,7 @@
 param(
     [string]$ProjectRoot = ".",
-    [string]$SharedCoreRelativePath = "ai-assisted-dev-starter",
+    [Alias("SharedCoreRelativePath")]
+    [string]$CoreRelativePath = "ai-assisted-dev-starter",
     [string]$ProjectResourcesRoot = ".ai-assisted-dev-starter"
 )
 
@@ -58,18 +59,18 @@ $projectReadmePath = Join-Path $projectDocsRoot "README.md"
 $tasksReadmePath = Join-Path $tasksDocsRoot "README.md"
 $adrReadmePath = Join-Path $adrDocsRoot "README.md"
 
-$sharedCoreReference = $SharedCoreRelativePath -replace "\\", "/"
+$coreReference = $CoreRelativePath -replace "\\", "/"
 $projectResourcesReference = $ProjectResourcesRoot -replace "\\", "/"
 
 Ensure-FileFromTemplate -Path $agentsPath -TemplatePath $projectAgentsTemplate -Replacements @{
-    "{{SHARED_CORE_PATH}}" = $sharedCoreReference
+    "{{CORE_PATH}}" = $coreReference
     "{{PROJECT_RESOURCES_ROOT}}" = $projectResourcesReference
 }
 Ensure-FileFromTemplate -Path $briefPath -TemplatePath $projectBriefTemplate
 Ensure-FileFromTemplate -Path $docsReadmePath -TemplatePath (Join-Path $projectTemplateRoot "README.md")
 Ensure-FileFromTemplate -Path $projectReadmePath -TemplatePath (Join-Path $projectTemplateRoot "project/README.md")
 Ensure-FileFromTemplate -Path $aiCollaborationPath -TemplatePath (Join-Path $projectTemplateRoot "project/ai-collaboration.md") -Replacements @{
-    "{{SHARED_CORE_PATH}}" = $sharedCoreReference
+    "{{CORE_PATH}}" = $coreReference
     "{{PROJECT_RESOURCES_ROOT}}" = $projectResourcesReference
 }
 Ensure-FileFromTemplate -Path $tasksReadmePath -TemplatePath (Join-Path $projectTemplateRoot "tasks/README.md")
