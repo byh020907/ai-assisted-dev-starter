@@ -1,11 +1,13 @@
 # ai-assisted-dev-starter
 
-Codex 기준의 워크플로우와 규칙을 담은 AI 보조 개발 starter core 저장소
+Codex 기준의 워크플로우와 규칙을 담은 AI 보조 개발 `core` 저장소
 
 ## 소개
 
 `ai-assisted-dev-starter`는 AI를 활용한 개발 프로젝트에서
-공통으로 재사용할 구조와 운영 규칙을 버전 관리하기 위한 starter core 저장소다.
+공통으로 재사용할 구조와 운영 규칙을 버전 관리하기 위한 `core` 저장소다.
+
+용어는 기본적으로 [glossary.md](/D:/projects/ai-assisted-dev-starter/standards/glossary.md)를 따른다.
 
 기본 사용 모델은 파일 복사가 아니라 `git submodule`이다.
 각 프로젝트는 이 저장소를 루트의 `ai-assisted-dev-starter/` submodule로 포함하고,
@@ -23,27 +25,27 @@ Codex 기준의 워크플로우와 규칙을 담은 AI 보조 개발 starter cor
 
 이 저장소는 아래 두 영역을 분리하는 것을 전제로 한다.
 
-1. starter core
+1. core
 2. project local outputs
 
-`starter core`는 여러 프로젝트가 함께 참조하는 공통 규칙과 템플릿이다.
+`core`는 여러 프로젝트가 함께 참조하는 공통 규칙과 템플릿이다.
 `project local outputs`는 특정 프로젝트에서만 누적되는 문서와 작업 산출물이다.
 
 권장 원칙은 다음과 같다.
 
 - 공통 구조, 규칙, workflow, 템플릿은 이 저장소 루트에서 관리한다.
-- 프로젝트별 개요, 요구사항, task 기록, ADR은 소비 프로젝트의 전용 리소스 루트에서 관리한다.
-- 소비 프로젝트는 이 저장소를 버전 고정된 `submodule`로 포함하고, 필요할 때만 업데이트한다.
-- 소비 프로젝트 루트에는 얇은 `AGENTS.md`를 두고 starter core 문서를 참조하게 한다.
-- 소비 프로젝트에 이미 `docs/`가 있다면 충돌을 피하기 위해 starter 전용 산출물은 별도 루트에 둔다.
-- 소비 프로젝트 초기 구조는 `project-template/`과 `templates/`를 기준으로 재현 가능하게 만든다.
+- 프로젝트별 개요, 요구사항, task 기록, ADR은 `consumer`의 전용 리소스 루트에서 관리한다.
+- `consumer`는 이 저장소를 버전 고정된 `submodule`로 포함하고, 필요할 때만 업데이트한다.
+- `consumer` 루트에는 얇은 `AGENTS.md`를 두고 `core` 문서를 참조하게 한다.
+- `consumer`에 이미 `docs/`가 있다면 충돌을 피하기 위해 starter 전용 산출물은 별도 루트에 둔다.
+- `consumer` 초기 구조는 `project-template/`과 `templates/`를 기준으로 재현 가능하게 만든다.
 
 운영 경계는 아래처럼 강하게 본다.
 
 - `ai-assisted-dev-starter/`는 기본적으로 읽기 전용 core다.
 - 프로젝트에서 새 규칙을 추가할 때 기본 기록 위치는 `.ai-assisted-dev-starter/project/`다.
-- 프로젝트 작업 중 생성되는 `ADR`, `task`, 협업 규칙은 starter core가 아니라 소비 프로젝트 로컬 루트에만 둔다.
-- 여러 프로젝트에 공통으로 재사용할 가치가 명확할 때만 starter core 수정 후보로 본다.
+- 프로젝트 작업 중 생성되는 `ADR`, `task`, 협업 규칙은 `core`가 아니라 `consumer` 로컬 루트에만 둔다.
+- 여러 프로젝트에 공통으로 재사용할 가치가 명확할 때만 `core` 수정 후보로 본다.
 - 사용자가 starter 자체 개선을 명시적으로 요청하지 않았다면 AI는 core 수정 대신 프로젝트 로컬 문서를 우선 수정한다.
 
 ## Quick Start
@@ -71,7 +73,7 @@ git submodule add https://github.com/byh020907/ai-assisted-dev-starter.git ai-as
 
 1. 새 프로젝트 루트를 만든다.
 2. 이 저장소를 프로젝트 루트의 `ai-assisted-dev-starter` 경로에 `git submodule`로 추가한다.
-3. 프로젝트 루트에서 starter core의 초기화 스크립트를 실행해 최소 `AGENTS.md`와 프로젝트 문서 구조를 만든다.
+3. 프로젝트 루트에서 `core`의 초기화 스크립트를 실행해 최소 `AGENTS.md`와 프로젝트 문서 구조를 만든다.
 4. 생성된 `AGENTS.md`와 `.ai-assisted-dev-starter/` 기본 파일을 프로젝트에 맞게 채운다.
 5. 공통 규칙 업데이트가 필요하면 submodule 버전을 갱신하고, 프로젝트에서 새 gitlink를 커밋한다.
 
@@ -79,7 +81,7 @@ git submodule add https://github.com/byh020907/ai-assisted-dev-starter.git ai-as
 
 1. 프로젝트 전용 규칙이면 `.ai-assisted-dev-starter/project/ai-collaboration.md` 또는 관련 프로젝트 문서를 수정한다.
 2. 프로젝트 산출물이면 `.ai-assisted-dev-starter/tasks/`, `.ai-assisted-dev-starter/adr/` 등에 기록한다.
-3. 여러 프로젝트에 공통으로 승격할 내용이고 사용자가 starter 개선을 명시한 경우에만 starter core 문서를 수정한다.
+3. 여러 프로젝트에 공통으로 승격할 내용이고 사용자가 starter 개선을 명시한 경우에만 `core` 문서를 수정한다.
 
 이미 submodule이 포함된 프로젝트를 clone 받은 뒤라면 아래 명령으로 초기화한다.
 
@@ -87,7 +89,7 @@ git submodule add https://github.com/byh020907/ai-assisted-dev-starter.git ai-as
 git submodule update --init --recursive
 ```
 
-기존 프로젝트에서 starter core를 최신 upstream으로 올리고 싶다면 아래처럼 갱신할 수 있다.
+기존 프로젝트에서 `core`를 최신 upstream으로 올리고 싶다면 아래처럼 갱신할 수 있다.
 
 ```bash
 git submodule update --remote ai-assisted-dev-starter
@@ -100,7 +102,7 @@ git commit -m "Update ai-assisted-dev-starter submodule"
 ```powershell
 pwsh ./ai-assisted-dev-starter/scripts/init-project-structure.ps1 `
   -ProjectRoot . `
-  -SharedCoreRelativePath ai-assisted-dev-starter `
+  -CoreRelativePath ai-assisted-dev-starter `
   -ProjectResourcesRoot .ai-assisted-dev-starter
 ```
 
@@ -110,7 +112,7 @@ pwsh ./ai-assisted-dev-starter/scripts/init-project-structure.ps1 `
 - 이미 있으면 덮어쓰지 않는다.
 - 기본 프로젝트 리소스 루트는 `.ai-assisted-dev-starter/`다.
 - 생성 대상은 `AGENTS.md`, `.ai-assisted-dev-starter/README.md`, `.ai-assisted-dev-starter/project/README.md`, `.ai-assisted-dev-starter/tasks/README.md`, `.ai-assisted-dev-starter/adr/README.md`, `.ai-assisted-dev-starter/project/brief.md`, `.ai-assisted-dev-starter/project/ai-collaboration.md`다.
-- `AGENTS.md`는 starter core를 참조하는 최소 버전으로 생성된다.
+- `AGENTS.md`는 `core`를 참조하는 최소 버전으로 생성된다.
 - 기존 프로젝트에 `docs/`가 있어도 충돌하지 않는다.
 - `.ai-assisted-dev-starter/` 기본 파일은 `project-template/` 구조에서 생성된다.
 
@@ -163,7 +165,7 @@ pwsh ./ai-assisted-dev-starter/scripts/init-project-structure.ps1 `
 3. 프로젝트별 특화 구조 및 산출물
 
 이 저장소는 주로 1, 2를 제공한다.
-3은 소비 프로젝트에서 별도로 구체화하고 유지하는 영역으로 본다.
+3은 `consumer`에서 별도로 구체화하고 유지하는 영역으로 본다.
 
 ## 구성
 
@@ -185,15 +187,15 @@ pwsh ./ai-assisted-dev-starter/scripts/init-project-structure.ps1 `
 
 - `standards/`: 작업 분류와 문서 관례 같은 공통 기준
 - `workflows/`: AI가 따라야 할 공통 작업 흐름 문서
-- `templates/`: 소비 프로젝트가 참고할 문서 템플릿
+- `templates/`: `consumer`가 참고할 문서 템플릿
 - `scenarios/`: 공통 작업 흐름 예시
 - `skills/`: 반복 작업을 돕는 skill 문서
-- `project-template/`: 소비 프로젝트 로컬 구조의 디렉토리 템플릿
-- `scripts/`: 소비 프로젝트 초기화 스크립트
+- `project-template/`: `consumer` 로컬 구조의 디렉토리 템플릿
+- `scripts/`: `consumer` 초기화 스크립트
 
 ## 공통 구조와 프로젝트 산출물의 경계
 
-아래 항목은 starter core에 둔다.
+아래 항목은 `core`에 둔다.
 
 - 공통 `AGENTS` 진입 규칙
 - 공통 AI workflow와 standards
@@ -201,7 +203,7 @@ pwsh ./ai-assisted-dev-starter/scripts/init-project-structure.ps1 `
 - 프로젝트 로컬 구조 템플릿
 - 재사용 가능한 시나리오와 skill
 
-아래 항목은 소비 프로젝트의 전용 리소스 루트 예를 들어 `.ai-assisted-dev-starter/` 아래에 둔다.
+아래 항목은 `consumer`의 전용 리소스 루트 예를 들어 `.ai-assisted-dev-starter/` 아래에 둔다.
 
 - 프로젝트 개요와 도메인 설명
 - 프로젝트별 AI 협업 규칙
@@ -211,21 +213,21 @@ pwsh ./ai-assisted-dev-starter/scripts/init-project-structure.ps1 `
 
 AI가 규칙 추가 요청을 처리할 때의 기본 우선순위는 다음과 같다.
 
-1. 프로젝트 전용 규칙 또는 예외면 소비 프로젝트 로컬 루트에 기록한다.
-2. 프로젝트 산출물이면 소비 프로젝트 로컬 루트에 기록한다.
-3. 공통화 가치가 분명하고 사용자가 명시적으로 요청한 경우에만 starter core에 반영한다.
+1. 프로젝트 전용 규칙 또는 예외면 `consumer` 로컬 루트에 기록한다.
+2. 프로젝트 산출물이면 `consumer` 로컬 루트에 기록한다.
+3. 공통화 가치가 분명하고 사용자가 명시적으로 요청한 경우에만 `core`에 반영한다.
 
 ## 예제로 보는 사용 방식
 
-새 프로젝트에서 이 starter core를 붙여 쓸 때는 아래처럼 운영한다.
+새 프로젝트에서 이 `core`를 붙여 쓸 때는 아래처럼 운영한다.
 
-1. 프로젝트 루트 `AGENTS.md`에서 starter core의 `AGENTS.md`를 참조한다.
+1. 프로젝트 루트 `AGENTS.md`에서 `core`의 `AGENTS.md`를 참조한다.
 2. 공통 기준은 submodule 루트의 `standards/`, `workflows/`, `templates/`, `scenarios/` 문서를 따른다.
 3. 프로젝트 고유 AI 협업 자산은 프로젝트 루트 `.ai-assisted-dev-starter/`에서 관리한다.
-4. 초기 문서가 없으면 starter core의 초기화 스크립트로 `.ai-assisted-dev-starter/` 구조를 생성한다.
+4. 초기 문서가 없으면 `core`의 초기화 스크립트로 `.ai-assisted-dev-starter/` 구조를 생성한다.
 5. 프로젝트 전체 배경과 상위 개요 문서는 `.ai-assisted-dev-starter/project/` 아래에 둔다.
 6. task 관련 문서는 `.ai-assisted-dev-starter/tasks/<date>-<task-slug>/` 아래에 함께 둔다.
 7. 장기 구조 결정은 `.ai-assisted-dev-starter/adr/`에 남긴다.
-8. starter core 자체를 개선할 필요가 있으면 이 저장소에서 변경하고, 이후 각 프로젝트가 submodule 버전을 올려 반영한다.
+8. `core` 자체를 개선할 필요가 있으면 이 저장소에서 변경하고, 이후 각 프로젝트가 submodule 버전을 올려 반영한다.
 
 실제 흐름 예시는 `scenarios/` 아래 시나리오 문서를 참고한다.
