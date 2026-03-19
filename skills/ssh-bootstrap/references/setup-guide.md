@@ -7,7 +7,8 @@
 - 기본 쉘은 PowerShell이다.
 - 실제 SSH 인증은 WSL 안의 `ssh` 가 담당한다.
 - 사용자는 인증만 직접 한다.
-- AI는 alias 등록, 세션 시작 명령 제안, 세션 확인, 원격 명령 실행, 세션 종료를 담당한다.
+- AI는 alias 등록, 세션 시작 명령 제안, 세션 확인, 원격 명령 실행을 담당하고, 세션 종료는 사용자가 명시적으로 요청한 경우에만 수행한다.
+- 새 로그인 창을 열었다면 최대 30초 동안 세션 활성화를 대기하는 흐름을 기본으로 한다.
 - 복잡한 원격 작업은 단일 문자열 명령 대신 로컬 스크립트를 stdin으로 전달하는 방식을 기본으로 한다.
 - 다중 서버 작업은 PowerShell 창 여러 개를 띄운 뒤 인증 완료 후 자동 종료하는 흐름을 기본으로 한다.
 - 사용자가 distro 이름을 헷갈리면 AI가 먼저 WSL 목록을 조회해서 후보를 제안한다.
@@ -30,9 +31,11 @@
 4. AI가 WSL alias를 등록한다.
 5. 사용자가 PowerShell에서 세션 시작 명령을 실행한다.
 6. 사용자가 인증을 직접 완료한다.
-7. AI가 세션 상태를 확인한다.
-8. AI가 원격 명령을 실행한다.
-9. 작업이 끝나면 AI가 세션을 닫는다.
+7. 새 창으로 열었다면 start script가 최대 30초 동안 세션 활성화를 대기한다.
+8. 30초 안에 세션이 열리면 AI가 세션 상태를 확인한다.
+9. AI가 원격 명령을 실행한다.
+10. 30초 안에 세션이 열리지 않으면 현재 대화 흐름을 종료한다.
+11. 작업이 끝나면 세션은 기본적으로 유지하고, 사용자가 명시적으로 요청한 경우에만 AI가 세션을 닫는다.
 
 ## distro 확인 먼저 하기
 
@@ -169,12 +172,26 @@ pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 `
   -Background
 ```
 
+대기 시간을 조정하려면:
+
+```powershell
+pwsh -File .\skills\ssh-bootstrap\scripts\start-wsl-shared-sessions.ps1 `
+  -AliasNames 10.0.0.12 `
+  -Distro OracleLinux_9_5 `
+  -OpenInNewWindows `
+  -Background `
+  -WaitTimeoutSeconds 30 `
+  -PollIntervalSeconds 3
+```
+
 비밀번호나 MFA가 필요한 서버는 한 창에서 동시에 처리할 수 없으므로, 병렬 시작은 별도 PowerShell 창을 여는 방식이 기본이다. `-Background` 를 함께 쓰면 인증이 끝난 뒤 각 창이 자동으로 닫히고 shared session만 남는다.
+기본값으로 현재 PowerShell 흐름은 최대 30초 동안 세션 활성화를 대기하므로, 사용자가 로그인 중일 때 바로 다음 단계가 실패로 끊기지 않는다. 30초 안에 준비되면 다음 명령으로 진행하고, 아니면 현재 대화 흐름을 종료한다. 즉시 반환이 필요하면 `-NoWait` 를 명시한다.
 
 1. 사용자가 PowerShell에서 `start-wsl-shared-sessions.ps1` 를 실행한다.
 2. 비밀번호, MFA, 키 패스프레이즈가 필요하면 사용자가 직접 입력한다.
 3. 인증이 끝나면 공유 세션이 열린다.
-4. 그 뒤부터 AI 에이전트는 alias만 사용해 명령을 실행할 수 있다.
+4. 새 창으로 열었다면 시작 스크립트가 활성화 여부를 polling 한다.
+5. 그 뒤부터 AI 에이전트는 alias만 사용해 명령을 실행할 수 있다.
 
 권장 확인:
 
@@ -333,7 +350,7 @@ pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 `
 
 - 비밀번호를 채팅에 붙여넣지 않는다.
 - 비밀번호를 환경변수, 저장소 파일, wrapper 인자에 직접 넘기지 않는다.
-- 가능하면 작업이 끝난 뒤 WSL에서 `ssh -O exit 10.0.0.12` 처럼 alias를 지정해 세션을 닫는다.
+- 세션 종료는 기본값이 아니며, 사용자가 정리를 요청했을 때만 WSL에서 `ssh -O exit 10.0.0.12` 처럼 alias를 지정해 세션을 닫는다.
 - WSL `~/.ssh/` 권한은 사용자 전용으로 유지한다.
 
 ## 보안 체크리스트
@@ -351,9 +368,11 @@ pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 `
 2. AI는 `setup-wsl-shared-session-alias.ps1` 로 WSL `~/.ssh/config` 에 alias를 추가한다.
 3. AI는 사용자에게 PowerShell에서 `start-wsl-shared-sessions.ps1 -AliasNames 10.0.0.12 -Distro OracleLinux_9_5` 를 실행해 인증하라고 안내한다.
 4. 사용자가 비밀번호나 MFA를 직접 입력한다.
-5. AI는 `check-wsl-shared-session.ps1` 로 세션을 확인한다.
-6. AI는 필요한 원격 작업을 수행한다.
-7. 작업이 끝나면 `close-wsl-shared-sessions.ps1 -AliasNames 10.0.0.12` 로 세션을 닫는다.
+5. 새 창으로 열었다면 시작 스크립트가 세션 활성화를 최대 30초 대기한다.
+6. 세션이 열리면 AI는 `check-wsl-shared-session.ps1` 로 세션을 확인한다.
+7. AI는 필요한 원격 작업을 수행한다.
+8. 30초 안에 세션이 열리지 않으면 현재 대화 흐름을 종료한다.
+9. 작업이 끝나면 세션은 기본적으로 유지하고, 사용자가 정리를 요청했을 때만 `close-wsl-shared-sessions.ps1 -AliasNames 10.0.0.12` 로 세션을 닫는다.
 
 ### 시나리오 B: 이미 등록된 서버에서 즉시 작업
 
@@ -361,7 +380,7 @@ pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 `
 2. 사용자가 AI에게 "방금 연 10.0.0.12 에서 nginx 설정 확인해줘" 라고 요청한다.
 3. AI는 `check-wsl-shared-session.ps1` 로 세션 상태를 확인한다.
 4. AI는 `invoke-wsl-shared-command.ps1 -AliasName 10.0.0.12 -RemoteCommand "nginx -t"` 를 실행한다.
-5. 작업이 끝나면 `close-wsl-shared-sessions.ps1 -AliasNames 10.0.0.12` 로 세션을 닫는다.
+5. 작업이 끝나면 세션은 기본적으로 유지하고, 사용자가 정리를 요청했을 때만 `close-wsl-shared-sessions.ps1 -AliasNames 10.0.0.12` 로 세션을 닫는다.
 
 ### 시나리오 D: 복잡한 배경 작업 실행
 
@@ -378,8 +397,10 @@ pwsh -File .\skills\ssh-bootstrap\scripts\close-wsl-shared-sessions.ps1 `
 2. AI는 alias별로 `setup-wsl-shared-session-alias.ps1` 를 실행해 WSL config를 준비한다.
 3. 이후 사용자는 PowerShell에서 `start-wsl-shared-sessions.ps1 -AliasNames ... -OpenInNewWindows -Background` 로 여러 세션 창을 한 번에 띄운다.
 4. 각 창에서 비밀번호나 MFA를 직접 완료하면 창은 자동으로 닫힌다.
-5. AI는 열린 alias에 대해서만 원격 작업을 수행한다.
-6. 작업이 끝나면 `close-wsl-shared-sessions.ps1` 로 여러 세션을 한 번에 닫을 수 있다.
+5. start script는 최대 30초 동안 각 alias의 세션 활성화를 대기한다.
+6. 세션이 열린 alias에 대해서만 AI가 원격 작업을 수행한다.
+7. 30초 안에 필요한 세션이 열리지 않으면 현재 대화 흐름을 종료한다.
+8. 작업이 끝나면 세션은 기본적으로 유지하고, 사용자가 정리를 요청했을 때만 `close-wsl-shared-sessions.ps1` 로 여러 세션을 한 번에 닫을 수 있다.
 
 ## 응답 작성 규칙
 

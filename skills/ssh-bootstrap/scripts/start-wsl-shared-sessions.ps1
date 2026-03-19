@@ -6,7 +6,13 @@ param(
 
     [switch]$OpenInNewWindows,
 
-    [switch]$Background
+    [switch]$Background,
+
+    [int]$WaitTimeoutSeconds = 30,
+
+    [int]$PollIntervalSeconds = 2,
+
+    [switch]$NoWait
 )
 
 $ErrorActionPreference = "Stop"
@@ -37,6 +43,14 @@ if ($duplicateAliases) {
     throw "Duplicate aliases in -AliasNames are not allowed: $($duplicateAliases -join ', ')"
 }
 
+if ($WaitTimeoutSeconds -lt 1) {
+    throw "-WaitTimeoutSeconds must be at least 1."
+}
+
+if ($PollIntervalSeconds -lt 1) {
+    throw "-PollIntervalSeconds must be at least 1."
+}
+
 function Get-WslSshCommand {
     param(
         [string]$AliasName,
@@ -53,6 +67,60 @@ function Get-WslSshCommand {
     return "wsl $sshArgs"
 }
 
+function Test-SharedSession {
+    param(
+        [string]$AliasName,
+        [string]$DistroName
+    )
+
+    $wslArgs = @()
+    if ($DistroName) {
+        $wslArgs = @("-d", $DistroName)
+    }
+
+    & wsl @wslArgs ssh -O check $AliasName *> $null
+    return ($LASTEXITCODE -eq 0)
+}
+
+function Wait-ForSharedSessions {
+    param(
+        [string[]]$PendingAliases,
+        [string]$DistroName,
+        [int]$TimeoutSeconds,
+        [int]$IntervalSeconds
+    )
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    $remainingAliases = [System.Collections.Generic.List[string]]::new()
+    foreach ($alias in $PendingAliases) {
+        $remainingAliases.Add($alias)
+    }
+
+    Write-Host "Waiting up to $TimeoutSeconds second(s) for shared session login to complete."
+
+    while ($remainingAliases.Count -gt 0 -and (Get-Date) -lt $deadline) {
+        $activatedAliases = @()
+        foreach ($alias in @($remainingAliases)) {
+            if (Test-SharedSession -AliasName $alias -DistroName $DistroName) {
+                $activatedAliases += $alias
+            }
+        }
+
+        foreach ($alias in $activatedAliases) {
+            [void]$remainingAliases.Remove($alias)
+            Write-Host "Shared session is ready for '$alias'"
+        }
+
+        if ($remainingAliases.Count -eq 0) {
+            return
+        }
+
+        Start-Sleep -Seconds $IntervalSeconds
+    }
+
+    throw "Timed out after $TimeoutSeconds second(s) waiting for shared session login to complete for: $($remainingAliases -join ', '). Stop the current conversation flow and ask the user to start a new request after login succeeds."
+}
+
 if ($OpenInNewWindows) {
     foreach ($alias in $normalizedAliases) {
         $command = Get-WslSshCommand -AliasName $alias -DistroName $Distro -UseBackground:$Background
@@ -64,6 +132,11 @@ if ($OpenInNewWindows) {
         }
         Start-Process powershell -ArgumentList $windowArgs | Out-Null
     }
+
+    if (-not $NoWait) {
+        Wait-ForSharedSessions -PendingAliases $normalizedAliases -DistroName $Distro -TimeoutSeconds $WaitTimeoutSeconds -IntervalSeconds $PollIntervalSeconds
+    }
+
     if ($Background) {
         Write-Host "Opened $($normalizedAliases.Count) PowerShell window(s). Each window will close after authentication completes and the shared session backgrounds."
     } else {
