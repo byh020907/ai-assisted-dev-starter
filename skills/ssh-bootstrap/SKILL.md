@@ -13,8 +13,9 @@ Guide AI-driven remote work through a user-opened shared SSH session in WSL, not
 - Register WSL SSH aliases from non-secret inputs only.
 - Start one or many shared SSH sessions from PowerShell.
 - Let the user complete password or MFA prompts directly.
+- Wait for the user-opened login window to finish authentication before moving to remote work.
 - Reuse opened sessions for AI-driven remote commands.
-- Close one or many shared sessions when work is done.
+- Close one or many shared sessions only when the user explicitly asks for cleanup.
 - Use script-based remote execution for complex shell work so nested quotes and heredocs do not break in PowerShell.
 
 ## Required Preconditions
@@ -44,8 +45,9 @@ Guide AI-driven remote work through a user-opened shared SSH session in WSL, not
 - Treat WSL `~/.ssh/config`, private keys, passwords, MFA codes, socket paths, and raw host connection values as sensitive.
 - Do not read WSL `~/.ssh/config`, WSL `~/.ssh/keys/`, shell rc files, password stores, or copied key material unless the user explicitly asks for that exact inspection.
 - For any new SSH work request, always start from `start-wsl-shared-sessions.ps1` instead of suggesting a raw `ssh` command first.
-- Use only alias-based commands through the bundled wrapper scripts for session start, validation, remote execution, and cleanup.
+- Use only alias-based commands through the bundled wrapper scripts for session start, validation, remote execution, and user-requested cleanup.
 - If no shared session exists, stop and ask the user to open one from PowerShell with `start-wsl-shared-sessions.ps1` first.
+- When opening new PowerShell windows for login, let `start-wsl-shared-sessions.ps1` keep the current flow pending for up to 30 seconds until the session becomes active.
 
 ## Follow the default workflow
 
@@ -58,9 +60,12 @@ Guide AI-driven remote work through a user-opened shared SSH session in WSL, not
 3. If the distro is unknown, list WSL distros and choose the best matching distro with the user.
 4. If the alias does not exist yet and the user gave non-secret values, create it with the WSL setup script.
 5. Ask the user to authenticate by running `start-wsl-shared-sessions.ps1` from PowerShell once.
-6. Check whether the shared session is active before running remote work.
-7. Use alias-only commands and wrapper scripts.
-8. Remind the user to keep secrets and raw connection values outside the repository and outside shared AI-readable files.
+6. If login is opened in a new window, let the start script wait for session readiness for up to 30 seconds unless the user explicitly wants fire-and-forget behavior.
+7. If the session becomes active during that wait, continue the workflow immediately.
+8. If the wait times out, stop the current conversation flow and ask the user to start a fresh request after login succeeds.
+9. Check whether the shared session is active before running remote work.
+10. Use alias-only commands and wrapper scripts.
+11. Remind the user to keep secrets and raw connection values outside the repository and outside shared AI-readable files.
 
 ## Default Runbook
 
@@ -68,11 +73,12 @@ Guide AI-driven remote work through a user-opened shared SSH session in WSL, not
 2. If distro is missing or vague, run `list-wsl-distros.ps1` and propose the closest available distro.
 3. If alias is not configured, run `setup-wsl-shared-session-alias.ps1`, letting the alias default to the host or IP when the user omitted it.
 4. If the user wants one session, always suggest `start-wsl-shared-sessions.ps1` with one alias.
-5. If the user wants many sessions, use `start-wsl-shared-sessions.ps1 -OpenInNewWindows -Background`.
-6. Before remote work, verify the session with `check-wsl-shared-session.ps1`.
-7. For simple one-line commands, use `invoke-wsl-shared-command.ps1 -RemoteCommand`.
-8. For multiline shell, heredocs, nested quotes, redirection, or background jobs, prefer `invoke-wsl-shared-command.ps1 -LocalScriptPath` or `-RemoteScriptBase64`.
-9. After work, close sessions with `close-wsl-shared-sessions.ps1`.
+5. If the user wants many sessions, use `start-wsl-shared-sessions.ps1 -OpenInNewWindows -Background` and allow the built-in 30-second wait unless they explicitly ask not to wait.
+6. If the wait succeeds, verify the session with `check-wsl-shared-session.ps1`.
+7. If the wait times out, stop and ask the user to retry in a new conversation after login completes.
+8. For simple one-line commands, use `invoke-wsl-shared-command.ps1 -RemoteCommand`.
+9. For multiline shell, heredocs, nested quotes, redirection, or background jobs, prefer `invoke-wsl-shared-command.ps1 -LocalScriptPath` or `-RemoteScriptBase64`.
+10. After work, keep the session open by default and close it with `close-wsl-shared-sessions.ps1` only if the user explicitly asks.
 
 ## Standard pattern for complex remote work
 
@@ -114,7 +120,7 @@ Keep responses short and operational:
 1. State what the agent can do directly and what the user must still do from PowerShell.
 2. If enough non-secret inputs are available, provide or run the exact WSL setup script command for the alias.
 3. Provide the exact alias-based command or wrapper script the agent should use next.
-4. End with one validation or cleanup command such as `check-wsl-shared-session.ps1` or `close-wsl-shared-sessions.ps1`.
+4. End with one validation command by default, and mention `close-wsl-shared-sessions.ps1` only when the user asks for cleanup.
 
 ## Apply command rules
 
@@ -123,15 +129,17 @@ Keep responses short and operational:
 - If the alias already exists in WSL `~/.ssh/config`, stop and tell the user to reuse the existing alias or choose a different alias instead of overwriting it.
 - If the same alias appears more than once in `-AliasNames`, `start-wsl-shared-sessions.ps1` and `close-wsl-shared-sessions.ps1` must fail fast.
 - To detect available distros before setup, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/list-wsl-distros.ps1`.
-- For any new SSH work request, always start one or many shared sessions with `pwsh -File ./skills/ssh-bootstrap/scripts/start-wsl-shared-sessions.ps1 -AliasNames <alias1>,<alias2> [-Distro <name>] [-OpenInNewWindows] [-Background]`.
+- For any new SSH work request, always start one or many shared sessions with `pwsh -File ./skills/ssh-bootstrap/scripts/start-wsl-shared-sessions.ps1 -AliasNames <alias1>,<alias2> [-Distro <name>] [-OpenInNewWindows] [-Background] [-WaitTimeoutSeconds <seconds>] [-PollIntervalSeconds <seconds>] [-NoWait]`.
 - To verify a shared session, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/check-wsl-shared-session.ps1 -AliasName <alias> [-Distro <name>]`.
 - To run remote commands, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/invoke-wsl-shared-command.ps1 -AliasName <alias> -RemoteCommand "<command>" [-Distro <name>]`.
 - For complex remote operations, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/invoke-wsl-shared-command.ps1 -AliasName <alias> -LocalScriptPath <local-script> [-ScriptArguments <arg1>,<arg2>] [-Distro <name>]`.
 - If the script content is already generated in memory, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/invoke-wsl-shared-command.ps1 -AliasName <alias> -RemoteScriptBase64 <base64> [-ScriptArguments <arg1>,<arg2>] [-Distro <name>]`.
-- To close one or many shared sessions after work, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/close-wsl-shared-sessions.ps1 -AliasNames <alias1>,<alias2> [-Distro <name>]`.
+- To close one or many shared sessions after work, prefer `pwsh -File ./skills/ssh-bootstrap/scripts/close-wsl-shared-sessions.ps1 -AliasNames <alias1>,<alias2> [-Distro <name>]`, but run it only when the user explicitly asks for cleanup.
 - When showing prerequisite setup, either run the WSL setup script for the user or instruct them to configure `ControlMaster`, `ControlPath`, and `ControlPersist` inside WSL.
 - The user must still authenticate in the PowerShell session that `start-wsl-shared-sessions.ps1` opens or runs in.
 - If multiple servers need password or MFA prompts, prefer launching separate PowerShell windows with `start-wsl-shared-sessions.ps1 -OpenInNewWindows -Background` so the user can authenticate each session independently and each window closes after authentication completes.
+- When `-OpenInNewWindows` is used, the start script should keep the current flow pending by default for up to 30 seconds until the session is active.
+- If the 30-second wait times out, stop the current conversation flow instead of continuing to remote execution.
 - When running remote commands, always use the alias and avoid expanding it into raw connection details.
 - Do not use `-RemoteCommand` for heredocs, multiline shell fragments, nested quotes, command substitution chains, or long background-job setup commands. Use script transport instead.
 - When generating a script inline in PowerShell, prefer a single-quoted here-string plus explicit placeholder replacement. This avoids local expansion of shell variables like `$HOME` before the script reaches the remote host.
